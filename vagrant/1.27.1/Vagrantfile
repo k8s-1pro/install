@@ -19,31 +19,23 @@ end
 
 $install_default = <<-SHELL
 
-echo '======== [1] Rocky Linux 기본 설정 ========'
-echo '======== [1] 패키지 업데이트 ========'
-#yum -y update
+echo '======== [4] Rocky Linux 기본 설정 ========'
+echo '======== [4] 패키지 업데이트 ========'
+yum -y update
 
-echo '======== [1] 타임존 설정 ========'
+echo '======== [4] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
 
-echo '======== [2] kubeadm 설치 전 사전작업 ========'
-# https://kubernetes.io/ko/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#%EC%8B%9C%EC%9E%91%ED%95%98%EA%B8%B0-%EC%A0%84%EC%97%90
-
-echo '======== [2] 방화벽 해제 ========'
-systemctl stop firewalld && systemctl disable firewalld
-
-echo '======== [2] Swap 비활성화 ========'
+echo '======== [5] kubeadm 설치 전 사전작업 ========'
+echo '======== [5] 방화벽 해제 ========'
+echo '======== [5] Swap 비활성화 ========'
 swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab
 
 
-echo '======== [3] 컨테이너 런타임 설치 ========'
-# https://kubernetes.io/ko/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#installing-runtime
-
-echo '======== [3-1] 컨테이너 런타임 설치 전 사전작업 ========'
-# https://kubernetes.io/ko/docs/setup/production-environment/container-runtimes/
-
-echo '======== [3-1] 컨테이너 네트워크 패킷이 호스트머신의 iptable에 따라 제어되도록 설정 ========'
+echo '======== [6] 컨테이너 런타임 설치 ========'
+echo '======== [6-1] 컨테이너 런타임 설치 전 사전작업 ========'
+echo '======== [6-1] iptable 세팅 ========'
 cat <<EOF |tee /etc/modules-load.d/k8s.conf
 overlay
 br_netfilter
@@ -60,38 +52,25 @@ EOF
 
 sysctl --system	
 
-
-echo '======== [3-2] 컨테이너 런타임 – containerd ========'
-# https://kubernetes.io/ko/docs/setup/production-environment/container-runtimes/#containerd
-
-echo '======== [3-2-1] containerd 설치 : 패키지설치 (option2) ========'
-# https://github.com/containerd/containerd/blob/main/docs/getting-started.md#option-2-from-apt-get-or-dnf
-
-echo '======== containerd 릴리즈 참고 ========'
-# https://github.com/containerd/containerd/blob/main/RELEASES.md
-
-
-echo '======== [3-2-1-1] docker engine 설치 중 containerd.io만 설치 ========'
-# https://docs.docker.com/engine/install/centos/
-
-echo '======== [3-2-1-1] 레파지토리 세팅 ========'
+echo '======== [6-2] 컨테이너 런타임 (containerd 설치) ========'
+echo '======== [6-2-1] containerd 패키지 설치 (option2) ========'
+echo '======== [6-2-1-1] docker engine 설치 ========'
+echo '======== [6-2-1-1] repo 설정 ========'
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
-echo '======== [3-2-1-1] containerd.io 패키지 설치 및 실행 ========'
+echo '======== [6-2-1-1] containerd 설치 ========'
 yum install -y containerd.io-1.6.21-3.1.el8
 systemctl daemon-reload
 systemctl enable --now containerd
 
-echo '======== [3-3] (참고) cri 활성화 ========'
+echo '======== [6-3] 컨테이너 런타임 : cri 활성화 ========'
 sed -i 's/^disabled_plugins/#disabled_plugins/' /etc/containerd/config.toml
 systemctl restart containerd
 
 
-echo '======== [4] kubeadm 설치 ========'
-# https://kubernetes.io/ko/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#kubeadm-kubelet-%EB%B0%8F-kubectl-%EC%84%A4%EC%B9%98
-
-echo '======== [4] 쿠버네티스 Repository 설정 ========'
+echo '======== [7] kubeadm 설치 ========'
+echo '======== [7] repo 설정 ========'
 cat <<EOF |tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -102,51 +81,46 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 exclude=kubelet kubeadm kubectl
 EOF
 
-echo '======== [4] permissive 모드로 SELinux 설정 ========'
-# Linux 보안 커널로 Application이 rule에 어긋나는 동작이 있을 경우 로그만 남기고 실행은 되도록 허용
+echo '======== [7] SELinux 설정 ========'
 setenforce 0	
 sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
-echo '======== [4] # kubelet, kubeadm, kubectl 패키지 설치 ========'
-#yum list --showduplicates kubeadm --disableexcludes=kubernetes
+echo '======== [7] kubelet, kubeadm, kubectl 패키지 설치 ========'
 yum install -y kubelet-1.27.1-0.x86_64 kubeadm-1.27.1-0.x86_64 kubectl-1.27.1-0.x86_64 --disableexcludes=kubernetes
 systemctl enable --now kubelet
 
 SHELL
 
+
+
 $install_master = <<-SHELL
 
-echo '======== [5] kubeadm으로 클러스터 생성 ========'
-# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+echo '======== [8] kubeadm으로 클러스터 생성  ========'
+echo '======== [8-1] 클러스터 초기화 (Pod Network 세팅) ========'
+kubeadm init --pod-network-cidr=20.96.0.0/12 --apiserver-advertise-address 192.168.56.30
 
-echo '======== [5-1] 클러스터 초기화 ========'
-kubeadm init --pod-network-cidr=20.96.0.0/12
-
-echo '======== [5-2] kubectl 사용 설정 ========'
+echo '======== [8-2] kubectl 사용 설정 ========'
 mkdir -p $HOME/.kube
 cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 	
-echo '======== [5-3] Pod Network 설치 (calico) ========'
+echo '======== [8-3] Pod Network 설치 (calico) ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/vagrant/1.27.1/calico/calico-v3.25.1.yaml
-# Calico 20.96.0.0/12 대역 세팅
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/vagrant/1.27.1/calico/calico-custom-v3.25.1.yaml
 
-echo '======== [5-4] Master에 Pod를 생성 할수 있도록 설정 ========'
+echo '======== [8-4] Master에 Pod를 생성 할수 있도록 설정 ========'
 kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane-
 
 
-echo '======== [6] 쿠버네티스 편의기능 설치 ========'
-
-echo '======== [6-1] kubectl 자동완성 기능 ========'
+echo '======== [9] 쿠버네티스 편의기능 설치 ========'
+echo '======== [9-1] kubectl 자동완성 기능 ========'
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
-echo '======== [6-2] Dashboard 설치 ========'
+echo '======== [9-2] Dashboard 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/vagrant/1.27.1/dashboard/dashboard-v2.7.0.yaml
-# 브라우져 접속 URI : https://192.168.56.30:30000/#/login
 
-echo '======== [6-3] Metrics-server 서버 설치 ========'
+echo '======== [9-3] Metrics Server 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/vagrant/1.27.1/metrics-server/metrics-server-v0.6.3.yaml
 SHELL
