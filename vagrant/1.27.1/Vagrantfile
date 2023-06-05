@@ -1,7 +1,9 @@
 
 Vagrant.configure("2") do |config|
     
-  config.vm.box = "rockylinux/8"    
+  config.vm.box = "rockylinux/8"
+  # Disk 확장설정 추가
+  config.disksize.size = "50GB"
   config.vm.provision :shell, privileged: true, inline: $install_default
 
   config.vm.define "master-node" do |master|
@@ -26,6 +28,10 @@ yum -y update
 echo '======== [4] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
+echo '======== [4] Disk 확장설정 추가========'
+yum install -y cloud-utils-growpart
+growpart /dev/sda 4
+xfs_growfs /dev/sda4
 
 echo '======== [5] kubeadm 설치 전 사전작업 ========'
 echo '======== [5] 방화벽 해제 ========'
