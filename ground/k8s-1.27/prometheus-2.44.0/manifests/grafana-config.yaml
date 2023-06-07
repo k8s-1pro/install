@@ -11,9 +11,5 @@ metadata:
 stringData:
   grafana.ini: |
     [date_formats]
-    default_timezone = UTC
-    [auth.anonymous]
-    enabled = true
-    [auth]
-    disable_login_form = true
+    default_timezone = Asia/Seoul
 type: Opaque
