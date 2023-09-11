@@ -115,8 +115,8 @@ cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 chown $(id -u):$(id -g) $HOME/.kube/config
 
 echo '======== [8-3] Pod Network 설치 (calico) ========'
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/calico-3.25.1/calico-custom.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/calico-3.25.1/calico.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/calico-3.25.1/calico-custom.yaml
 
 echo '======== [8-4] Master에 Pod를 생성 할수 있도록 설정 ========'
 kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane-
