@@ -28,10 +28,13 @@ yum -y update
 echo '======== [4] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
-echo '======== [4] Disk 확장설정 추가========'
+echo '======== [4] Disk 확장 / Bug: soft lockup 설정 추가========'
+# https://cafe.naver.com/kubeops/25
 yum install -y cloud-utils-growpart
 growpart /dev/sda 4
 xfs_growfs /dev/sda4
+echo 0 > /proc/sys/kernel/hung_task_timeout_secs
+echo "kernel.watchdog_thresh = 20" >> /etc/sysctl.conf
 
 echo '======== [5] kubeadm 설치 전 사전작업 ========'
 echo '======== [5] 방화벽 해제 ========'
