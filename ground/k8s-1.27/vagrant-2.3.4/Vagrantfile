@@ -31,6 +31,7 @@ timedatectl set-timezone Asia/Seoul
 echo '======== [4] Disk 확장 / Bug: soft lockup 설정 추가========'
 # https://cafe.naver.com/kubeops/25
 yum install -y cloud-utils-growpart
+yum install -y gcc make perl bison m4 flex elfutils-libelf-devel kernel kernel-headers kernel-devel
 growpart /dev/sda 4
 xfs_growfs /dev/sda4
 echo 0 > /proc/sys/kernel/hung_task_timeout_secs
