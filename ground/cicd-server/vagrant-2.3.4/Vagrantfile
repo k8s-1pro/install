@@ -14,7 +14,7 @@ Vagrant.configure("2") do |config|
     cicd.vm.network "private_network", ip: "192.168.56.20"
 	cicd.vm.provider :virtualbox do |vb|
       vb.memory = 2048
-      vb.cpus = 1
+      vb.cpus = 2
 	  vb.customize ["modifyvm", :id, "--firmware", "efi"]
 	end
     cicd.vm.provision :shell, privileged: true, inline: $install_cicd
@@ -36,12 +36,12 @@ growpart /dev/sda 4
 xfs_growfs /dev/sda4
 
 echo '======== [1-4] 방화벽 해제 ========'
-#systemctl stop firewalld && systemctl disable firewalld
+systemctl stop firewalld && systemctl disable firewalld
 
 
 echo '======== [2] 도커 설치 ========'
-#yum install -y yum-utils device-mapper-persistent-data lvm2
-#yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+# yum install -y yum-utils device-mapper-persistent-data lvm2
+# yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 # https://download.docker.com/linux/centos/8/x86_64/stable/Packages/  팁은 여기서 containerd와 같은 날짜
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
@@ -76,11 +76,21 @@ wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenki
 rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
 yum install -y java-11-openjdk-1:11.0.19.0.7-4.el8
 yum install -y java-17-openjdk-1:17.0.7.0.7-3.el8
-yum install -y jenkins-2.401.1-1.1
+yum install -y jenkins-2.414.2
 systemctl enable jenkins
 systemctl start jenkins
 
-echo '======== [5] Jenkins 설치  ========'
+echo '======== [5] Gradle 설치  ========'
+wget https://services.gradle.org/distributions/gradle-7.6.1-bin.zip -P ~/
+unzip -d /opt/gradle ~/gradle-*.zip
+cat <<EOF |tee /etc/profile.d/gradle.sh
+export GRADLE_HOME=/opt/gradle/gradle-7.6.1
+export PATH=${GRADLE_HOME}/bin:${PATH}
+EOF
+chmod +x /etc/profile.d/gradle.sh
+source /etc/profile.d/gradle.sh
+
+echo '======== [5] Git 설치  ========'
 yum install -y git-2.39.3-1.el8_8
 
 
