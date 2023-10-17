@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "cicd-server" do |cicd|
     cicd.vm.hostname = "cicd-server"
-    cicd.vm.network "private_network", ip: "192.168.56.20"
+    cicd.vm.network "private_network", ip: "192.168.56.21"
 	cicd.vm.provider :virtualbox do |vb|
       vb.memory = 2048
       vb.cpus = 2
@@ -39,19 +39,8 @@ echo '======== [1-4] 방화벽 해제 ========'
 systemctl stop firewalld && systemctl disable firewalld
 
 
-echo '======== [2] 도커 설치 ========'
-# yum install -y yum-utils device-mapper-persistent-data lvm2
-# yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-# https://download.docker.com/linux/centos/8/x86_64/stable/Packages/  팁은 여기서 containerd와 같은 날짜
-yum install -y yum-utils
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum install -y docker-ce-3:23.0.6-1.el8 docker-ce-cli-1:23.0.6-1.el8 containerd.io-1.6.21-3.1.el8
-systemctl daemon-reload
-systemctl enable --now docker
-
-
-echo '======== [3] Kubectl 설치 ========'
-echo '======== [3-1] repo 설정 ========'
+echo '======== [2] Kubectl 설치 ========'
+echo '======== [2-1] repo 설정 ========'
 cat <<EOF |tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
@@ -62,25 +51,28 @@ gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cl
 exclude=kubelet kubeadm kubectl
 EOF
 
-echo '======== [3-2] Kubectl 설치 ========'
+echo '======== [2-2] Kubectl 설치 ========'
 yum install -y kubectl-1.27.2-0.x86_64 --disableexcludes=kubernetes
 
-echo '======== [3-3] Kubectl 자동완성 기능 설치 ========'
+echo '======== [2-3] Kubectl 자동완성 기능 설치 ========'
 echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
-echo '======== [4] Jenkins 설치  ========'
-yum -y install wget
-wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
-rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-yum install -y java-11-openjdk-1:11.0.19.0.7-4.el8
+
+echo '======== [3] 도커 설치 ========'
+# https://download.docker.com/linux/centos/8/x86_64/stable/Packages/ 저장소 경로
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce-3:23.0.6-1.el8 docker-ce-cli-1:23.0.6-1.el8 containerd.io-1.6.21-3.1.el8
+systemctl daemon-reload
+systemctl enable --now docker
+
+echo '======== [4] OpenJDK 설치  ========'
 yum install -y java-17-openjdk-1:17.0.7.0.7-3.el8
-yum install -y jenkins-2.414.2
-systemctl enable jenkins
-systemctl start jenkins
 
 echo '======== [5] Gradle 설치  ========'
+yum -y install wget unzip
 wget https://services.gradle.org/distributions/gradle-7.6.1-bin.zip -P ~/
 unzip -d /opt/gradle ~/gradle-*.zip
 cat <<EOF |tee /etc/profile.d/gradle.sh
@@ -90,9 +82,15 @@ EOF
 chmod +x /etc/profile.d/gradle.sh
 source /etc/profile.d/gradle.sh
 
-echo '======== [5] Git 설치  ========'
+echo '======== [6] Git 설치  ========'
 yum install -y git-2.39.3-1.el8_8
 
+echo '======== [7] Jenkins 설치  ========'
+wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
+rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
+yum install -y java-11-openjdk-1:11.0.19.0.7-4.el8 jenkins-2.414.2-1.1
+systemctl enable jenkins
+systemctl start jenkins
 
 # Jenkin 권한으로 변경
 
