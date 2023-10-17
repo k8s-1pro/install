@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "cicd-server" do |cicd|
     cicd.vm.hostname = "cicd-server"
-    cicd.vm.network "private_network", ip: "192.168.56.21"
+    cicd.vm.network "private_network", ip: "192.168.56.20"
 	cicd.vm.provider :virtualbox do |vb|
       vb.memory = 2048
       vb.cpus = 2
