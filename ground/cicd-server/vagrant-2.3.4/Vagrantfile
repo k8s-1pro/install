@@ -54,11 +54,6 @@ EOF
 echo '======== [2-2] Kubectl 설치 ========'
 yum install -y kubectl-1.27.2-0.x86_64 --disableexcludes=kubernetes
 
-echo '======== [2-3] Kubectl 자동완성 기능 설치 ========'
-echo "source <(kubectl completion bash)" >> ~/.bashrc
-echo 'alias k=kubectl' >>~/.bashrc
-echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
-
 
 echo '======== [3] 도커 설치 ========'
 # https://download.docker.com/linux/centos/8/x86_64/stable/Packages/ 저장소 경로
