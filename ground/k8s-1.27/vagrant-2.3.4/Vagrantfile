@@ -8,9 +8,6 @@ Vagrant.configure("2") do |config|
   #https://cafe.naver.com/kubeops/26
   config.vbguest.auto_update = false
   config.vm.synced_folder "./", "/vagrant", disabled: true
-  config.ssh.extra_args = ["-o", "PubkeyAcceptedKeyTypes=+ssh-rsa", "-o", "HostKeyAlgorithms=+ssh-rsa"]
-  config.vm.boot_timeout = 500
-
 
   config.vm.provision :shell, privileged: true, inline: $install_default
   config.vm.define "master-node" do |master|
