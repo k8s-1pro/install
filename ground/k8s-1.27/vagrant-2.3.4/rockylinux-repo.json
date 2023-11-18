@@ -3,7 +3,7 @@
   "description" : "Rocky Linux 8.8",
   "versions" : [
     {
-      "version" : "8.8-20230518.0.x86_64",
+      "version" : "8.8-20230518.0",
       "providers" : [
         {
           "name" : "virtualbox",
