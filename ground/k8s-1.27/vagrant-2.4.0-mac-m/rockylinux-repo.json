@@ -3,11 +3,11 @@
   "description" : "Rocky Linux 8.8",
   "versions" : [
     {
-      "version" : "8.8-20230518.0.x86_64",
+      "version" : "8.8-20230518.0.aarch64",
       "providers" : [
         {
           "name" : "virtualbox",
-          "url" : "http://dl.rockylinux.org/pub/rocky/8/images/x86_64/Rocky-8-Vagrant-Vbox-8.8-20230518.0.x86_64.box"
+          "url" : "http://dl.rockylinux.org/pub/rocky/8/images/aarch64/Rocky-8-Vagrant-Vbox-8.8-20230518.0.aarch64.box"
         }
       ]
     }
