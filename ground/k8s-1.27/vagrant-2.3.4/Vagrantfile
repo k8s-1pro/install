@@ -26,13 +26,13 @@ end
 $install_default = <<-SHELL
 
 echo '======== [4] Rocky Linux 기본 설정 ========'
-echo '======== [4] 패키지 업데이트 ========'
+echo '======== [4-1] 패키지 업데이트 ========'
 yum -y update
 
-echo '======== [4] 타임존 설정 ========'
+echo '======== [4-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
-echo '======== [4] Disk 확장 / Bug: soft lockup 설정 추가========'
+echo '======== [4-3] Disk 확장 / Bug: soft lockup 설정 추가========'
 # https://cafe.naver.com/kubeops/25
 yum install -y cloud-utils-growpart
 growpart /dev/sda 4
@@ -40,8 +40,13 @@ xfs_growfs /dev/sda4
 echo 0 > /proc/sys/kernel/hung_task_timeout_secs
 echo "kernel.watchdog_thresh = 20" >> /etc/sysctl.conf
 
-echo '======== [4] [WARNING FileExisting-tc]: tc not found in system path 로그 관련 업데이트 ========'
+echo '======== [4-4] [WARNING FileExisting-tc]: tc not found in system path 로그 관련 업데이트 ========'
 yum install -y yum-utils iproute-tc
+
+echo '======= [4-4] hosts 설정 =========='
+cat << EOF >> /etc/hosts
+192.168.56.30 k8s-master
+EOF
 
 echo '======== [5] kubeadm 설치 전 사전작업 ========'
 echo '======== [5] 방화벽 해제 ========'
@@ -79,6 +84,10 @@ yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce
 
 echo '======== [6-2-1-1] containerd 설치 ========'
 yum install -y containerd.io-1.6.21-3.1.el8
+# defualt cgroupfs에서 systemd로 변경 (kubernetes default는 systemd)
+containerd config default > /etc/containerd/config.toml
+sed -i 's/ SystemdCgroup = false/ SystemdCgroup = true/' /etc/containerd/config.toml
+systemctl restart containerd
 systemctl daemon-reload
 systemctl enable --now containerd
 
@@ -89,22 +98,23 @@ systemctl restart containerd
 
 echo '======== [7] kubeadm 설치 ========'
 echo '======== [7] repo 설정 ========'
-cat <<EOF |tee /etc/yum.repos.d/kubernetes.repo
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
 [kubernetes]
 name=Kubernetes
-baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.27/rpm/
 enabled=1
 gpgcheck=1
-gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
-exclude=kubelet kubeadm kubectl
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.27/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
+
 
 echo '======== [7] SELinux 설정 ========'
 setenforce 0
 sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
 echo '======== [7] kubelet, kubeadm, kubectl 패키지 설치 ========'
-yum install -y kubelet-1.27.2-0.x86_64 kubeadm-1.27.2-0.x86_64 kubectl-1.27.2-0.x86_64 --disableexcludes=kubernetes
+yum install -y kubelet-1.27.2-150500.1.1.x86_64 kubeadm-1.27.2-150500.1.1.x86_64 kubectl-1.27.2-150500.1.1.x86_64 --disableexcludes=kubernetes
 systemctl enable --now kubelet
 
 SHELL
