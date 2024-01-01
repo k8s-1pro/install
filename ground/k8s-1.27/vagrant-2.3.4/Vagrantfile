@@ -79,7 +79,6 @@ echo '======== [6-2] 컨테이너 런타임 (containerd 설치) ========'
 echo '======== [6-2-1] containerd 패키지 설치 (option2) ========'
 echo '======== [6-2-1-1] docker engine 설치 ========'
 echo '======== [6-2-1-1] repo 설정 ========'
-yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 echo '======== [6-2-1-1] containerd 설치 ========'
