@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         // 배포 환경 선택
-        choice(choices: ['helm_upgrade', 'helm_uninstall', 'namespace_create', 'namespace_delete'], name: 'DEPLOY_TYPE', description: '배포 환경 선택')
+        choice(choices: ['namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 환경 선택')
     }
 
     environment {
