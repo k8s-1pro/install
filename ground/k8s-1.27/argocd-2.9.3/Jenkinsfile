@@ -44,7 +44,7 @@ pipeline {
                 script{
                     if (params.DEPLOY_TYPE == "helm_upgrade") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
-                            sh "helm upgrade argo-cd ./${INSTALL_PATH}/helm/argocd -f ./${INSTALL_PATH}/helm/argo-cd/values-custom.yaml" +
+                            sh "helm upgrade argocd ./${INSTALL_PATH}/helm/argo-cd -f ./${INSTALL_PATH}/helm/argo-cd/values-custom.yaml" +
                                     " -n argocd --install --kubeconfig " + '${KUBECONFIG}' +
                                     " --wait --timeout=10m"   // 최대 10분으로 설정
                         }
