@@ -45,7 +45,7 @@ pipeline {
                     if (params.DEPLOY_TYPE == "helm_upgrade") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             sh "helm upgrade argo-cd ./${INSTALL_PATH}/helm/argo-cd -f ./${INSTALL_PATH}/helm/argo-cd/values-custom.yaml" +
-                                    " -n argo-cd --install --kubeconfig " + '${KUBECONFIG}' +
+                                    " -n argocd --install --kubeconfig " + '${KUBECONFIG}' +
                                     " --wait --timeout=10m"   // 최대 10분으로 설정
                         }
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
