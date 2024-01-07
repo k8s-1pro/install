@@ -25,11 +25,11 @@ pipeline {
         stage('네임스페이스 관리') {
             steps {
                 script{
-                    if (${params.DEPLOY_TYPE} == "namespace_create") {
+                    if (params.DEPLOY_TYPE == "namespace_create") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             sh "kubectl apply -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
                         }
-                    } else if (${params.DEPLOY_TYPE} == "namespace_delete") {
+                    } else if (params.DEPLOY_TYPE == "namespace_delete") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
                         }
@@ -43,13 +43,13 @@ pipeline {
         stage('헬름 배포 관리') {
             steps {
                 script{
-                    if (${params.DEPLOY_TYPE} == "helm_upgrade") {
+                    if (params.DEPLOY_TYPE == "helm_upgrade") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             sh "helm upgrade argo-cd ./${INSTALL_PATH}/helm/argo-cd -f ./${INSTALL_PATH}/helm/argo-cd/values-custom.yaml" +
                                     " -n argo-cd --install --kubeconfig " + '${KUBECONFIG}' +
                                     " --wait --timeout=10m"   // 최대 10분으로 설정
                         }
-                    } else if (${params.DEPLOY_TYPE} == "helm_uninstall") {
+                    } else if (params.DEPLOY_TYPE == "helm_uninstall") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
                         }
