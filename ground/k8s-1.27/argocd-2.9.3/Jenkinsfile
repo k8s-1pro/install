@@ -2,8 +2,7 @@ pipeline {
     agent any
 
     parameters {
-        // 배포 환경 선택
-        choice(choices: ['namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 환경 선택')
+        choice(choices: ['namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 타입 선택')
     }
 
     environment {
