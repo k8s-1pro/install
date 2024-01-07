@@ -1,0 +1,63 @@
+pipeline {
+    agent any
+
+    parameters {
+        // 배포 환경 선택
+        choice(choices: ['helm_update', 'helm_uninstall', 'namespace_create', 'namespace_delete'], name: 'DEPLOY_TYPE', description: '배포 환경 선택')
+    }
+
+    environment {
+        DOCKERHUB_USERNAME = '1pro'
+        GITHUB_URL = 'https://github.com/k8s-1pro/install.git'
+        INSTALL_PATH = 'ground/k8s-1.27/argocd-2.9.3'
+    }
+
+    stages {
+        stage('릴리즈파일 체크아웃') {
+            steps {
+                checkout scmGit(branches: [[name: '*/main']],
+                        extensions: [[$class: 'SparseCheckoutPaths',
+                                      sparseCheckoutPaths: [[path: "/${INSTALL_PATH}"]]]],
+                        userRemoteConfigs: [[url: "${GITHUB_URL}"]])
+            }
+        }
+
+        stage('네임스페이스 관리') {
+            steps {
+                script{
+                    if (DEPLOY_TYPE == "namespace_create") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "kubectl apply -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                        }
+                    } else if (DEPLOY_TYPE == "namespace_delete") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                        }
+                    } else {
+                        echo "skip"
+                    }
+                }
+            }
+        }
+
+        stage('헬름 배포 관리') {
+            steps {
+                script{
+                    if (DEPLOY_TYPE == "helm_update") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "helm upgrade argo-cd ./${INSTALL_PATH}/helm/argo-cd -f ./${INSTALL_PATH}/helm/argo-cd/values-custom.yaml" +
+                                    " -n argo-cd --install --kubeconfig " + '${KUBECONFIG}' +
+                                    " --wait --timeout=10m"   // 최대 10분으로 설정
+                        }
+                    } else if (DEPLOY_TYPE == "helm_uninstall") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                        }
+                    } else {
+                        echo "skip"
+                    }
+                }
+            }
+        }
+    }
+}
