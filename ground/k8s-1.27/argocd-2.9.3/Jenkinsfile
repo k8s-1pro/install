@@ -50,7 +50,7 @@ pipeline {
                         }
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
-                            sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                            sh "helm uninstall argo-cd -n argocd --kubeconfig " + '${KUBECONFIG}'
                         }
                     } else {
                         echo "skip"
