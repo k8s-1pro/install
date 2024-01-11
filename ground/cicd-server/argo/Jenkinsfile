@@ -57,7 +57,7 @@ pipeline {
                                 }
                             }
 
-                            eval "$HELM_DEPLOY_COMMAND"
+                            sh "eval ${HELM_DEPLOY_COMMAND}"
                         }
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
