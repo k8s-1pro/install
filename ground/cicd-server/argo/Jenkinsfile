@@ -51,13 +51,13 @@ pipeline {
                                 " --wait --timeout=10m "   // 최대 10분으로 설정
 
                             // image-updater일 경우 도커허브 credentials 주입
-                            if (params.TARGET_ARGO == "argocd-image-updater") {
-                                withCredentials([usernamePassword(credentialsId: 'docker_password', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
-                                    HELM_DEPLOY_COMMAND += " --set config.registries[0].credentials=env:DOCKER_HUB_CREDS="+ '${USERNAME}' + ":" + '${PASSWORD}'
-                                }
-                            }
+//                            if (params.TARGET_ARGO == "argocd-image-updater") {
+//                                withCredentials([usernamePassword(credentialsId: 'docker_password', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+//                                    HELM_DEPLOY_COMMAND += " --set config.registries[0].credentials=env:DOCKER_HUB_CREDS="+ '${USERNAME}' + ":" + '${PASSWORD}'
+//                                }
+//                            }
                             echo ${HELM_DEPLOY_COMMAND}
-                            eval ${HELM_DEPLOY_COMMAND}
+                            //eval ${HELM_DEPLOY_COMMAND}
                         }
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
