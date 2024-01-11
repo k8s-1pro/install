@@ -3,7 +3,7 @@ pipeline {
 
     parameters {
         choice(choices: ['option', 'namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 타입 선택')
-        choice(choices: ['option', 'argocd', 'argocd-image-updater', 'argo-rollouts'], name: 'TARGET_ARGO', description: 'Argo 대상 선택')
+        choice(choices: ['option', 'argo-cd', 'argocd-image-updater', 'argo-rollouts'], name: 'TARGET_ARGO', description: 'Argo 대상 선택')
     }
 
     environment {
@@ -47,7 +47,7 @@ pipeline {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
                             HELM_DEPLOY_COMMAND =  "helm upgrade ${params.TARGET_ARGO} ./${INSTALL_PATH}/helm/${params.TARGET_ARGO} " +
                                 " -f ./${INSTALL_PATH}/helm/${params.TARGET_ARGO}/values-dev.yaml" +
-                                " -n argocd --install --kubeconfig " + '${KUBECONFIG}' +
+                                " -n argo --install --kubeconfig " + '${KUBECONFIG}' +
                                 " --wait --timeout=10m "   // 최대 10분으로 설정
 
                             // image-updater일 경우 도커허브 credentials 주입
@@ -62,7 +62,7 @@ pipeline {
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
-                            sh "helm uninstall ${params.TARGET_ARGO} -n argocd --kubeconfig " + '${KUBECONFIG}'
+                            sh "helm uninstall ${params.TARGET_ARGO} -n argo --kubeconfig " + '${KUBECONFIG}'
 
                             // CRD 삭제
                             sh "kubectl delete crd  applications.argoproj.io applicationsets.argoproj.io appprojects.argoproj.io --kubeconfig " + '${KUBECONFIG}'
