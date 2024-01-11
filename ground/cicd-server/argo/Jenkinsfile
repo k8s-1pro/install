@@ -13,15 +13,6 @@ pipeline {
     }
 
     stages {
-        stage('릴리즈파일 체크아웃') {
-            steps {
-                checkout scmGit(branches: [[name: '*/main']],
-                        extensions: [[$class: 'SparseCheckoutPaths',
-                                      sparseCheckoutPaths: [[path: "/${INSTALL_PATH}"]]]],
-                        userRemoteConfigs: [[url: "${GITHUB_URL}"]])
-            }
-        }
-
         stage('네임스페이스 관리') {
             steps {
                 script{
