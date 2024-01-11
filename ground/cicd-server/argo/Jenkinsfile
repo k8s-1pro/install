@@ -56,8 +56,8 @@ pipeline {
                                     HELM_DEPLOY_COMMAND += " --set config.registries[0].credentials=env:DOCKER_HUB_CREDS="+ '${USERNAME}' + ":" + '${PASSWORD}'
                                 }
                             }
-                            echo "$HELM_DEPLOY_COMMAND"
-                            eval "${HELM_DEPLOY_COMMAND}"
+
+                            eval "$HELM_DEPLOY_COMMAND"
                         }
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
