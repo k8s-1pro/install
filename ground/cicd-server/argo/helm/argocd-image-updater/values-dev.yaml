@@ -1,0 +1,12 @@
+config:
+  argocd:
+    grpcWeb: false
+    serverAddress: "http://argocd-server"
+    insecure: true
+    plaintext: true
+
+  registries:
+    - name: Docker Hub
+      api_url: https://registry-1.docker.io
+      #credentials: env:DOCKER_HUB_CREDS=username:passowrd
+
