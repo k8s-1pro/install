@@ -54,7 +54,7 @@ pipeline {
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
                         withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
-                            sh "helm uninstall ${params.TARGET_ARGO} -n argocd --kubeconfig " + '${KUBECONFIG}'
+                            sh "helm uninstall ${params.TARGET_ARGO} -n argo --kubeconfig " + '${KUBECONFIG}'
 
                             // CRD 삭제
                             if (params.TARGET_ARGO == "argo-cd") {
