@@ -52,7 +52,7 @@ exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 
 echo '======== [2-2] Kubectl 설치 ========'
-yum install -y kubelet-1.27.2-150500.1.1.x86_64 --disableexcludes=kubernetes
+yum install -y kubectl-1.27.2-150500.1.1.x86_64 --disableexcludes=kubernetes
 
 
 echo '======== [3] 도커 설치 ========'
