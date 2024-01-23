@@ -50,6 +50,7 @@ pipeline {
                             }
 
                             sh "eval ${HELM_DEPLOY_COMMAND}"
+                            // sh "helm update argo-cd -n argo --kubeconfig " + '${KUBECONFIG}' + " --wait --timeout=10m "
                         }
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
