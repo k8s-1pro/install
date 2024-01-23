@@ -1,9 +1,6 @@
 config:
   argocd:
-    grpcWeb: false
     serverAddress: "http://argo-cd-argocd-server"
-    insecure: true
-    plaintext: true
 
   registries:
     - name: Docker Hub
