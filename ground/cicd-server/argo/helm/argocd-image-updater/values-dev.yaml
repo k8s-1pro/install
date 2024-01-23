@@ -1,6 +1,6 @@
 config:
   argocd:
-    serverAddress: "http://argo-cd-argocd-server"
+    serverAddress: "https://argo-cd-argocd-server"
 
   registries:
     - name: Docker Hub
