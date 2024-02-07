@@ -64,6 +64,7 @@ systemctl daemon-reload
 systemctl enable --now docker
 
 echo '======== [4] OpenJDK 설치  ========'
+# yum list --showduplicates java-17-openjdk
 yum install -y java-17-openjdk
 
 echo '======== [5] Gradle 설치  ========'
