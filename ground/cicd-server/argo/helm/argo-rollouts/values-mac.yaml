@@ -1,0 +1,11 @@
+controller:
+  replicas: 1
+
+dashboard:
+  enabled: true
+  service:
+    type: NodePort
+    portName: dashboard
+    port: 3100
+    targetPort: 3100
+    nodePort: 30003
