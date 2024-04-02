@@ -1,3 +1,8 @@
+hostAliases: []
+# - ip: 10.20.30.40
+#   hostnames:
+#   - git.myhostname
+
 # -- Replica count for the deployment. It is not advised to run more than one replica.
 replicaCount: 1
 image:

@@ -7,3 +7,11 @@ config:
       api_url: https://registry-1.docker.io
       #credentials: env:DOCKER_HUB_CREDS=username:passowrd
 
+## Mac m1 에서는 Argocd UI에서 도메인을 찾지 못해서 직접 IP를 넣어줬습니다.
+hostAliases:
+  - ip: 20.200.245.247
+    hostnames:
+      - github.com
+  - ip: 54.236.113.205
+    hostnames:
+      - registry-1.docker.io
