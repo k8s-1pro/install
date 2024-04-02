@@ -1,0 +1,76 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(choices: ['option', 'namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 타입 선택')
+        choice(choices: ['option', 'argo-cd', 'argocd-image-updater', 'argo-rollouts'], name: 'TARGET_ARGO', description: 'Argo 대상 선택')
+    }
+
+    environment {
+        DOCKERHUB_USERNAME = '1pro'
+        GITHUB_URL = 'https://github.com/k8s-1pro/install.git'
+        INSTALL_PATH = 'ground/cicd-server/argo'
+    }
+
+    stages {
+        stage('네임스페이스 관리') {
+            steps {
+                script{
+                    if (params.DEPLOY_TYPE == "namespace_create") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "kubectl apply -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                        }
+                    } else if (params.DEPLOY_TYPE == "namespace_delete") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml --kubeconfig " + '${KUBECONFIG}'
+                        }
+                    } else {
+                        echo "skip namespace"
+                    }
+                }
+            }
+        }
+
+        stage('헬름 배포 관리') {
+            steps {
+                script{
+                    if (params.DEPLOY_TYPE == "helm_upgrade") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            HELM_DEPLOY_COMMAND =  "helm upgrade ${params.TARGET_ARGO} ./${INSTALL_PATH}/helm/${params.TARGET_ARGO} " +
+                                " -f ./${INSTALL_PATH}/helm/${params.TARGET_ARGO}/values-dev.yaml" +
+                                " -n argo --install --kubeconfig " + '${KUBECONFIG}' +
+                                " --wait --timeout=10m "   // 최대 10분으로 설정
+
+                            // image-updater일 경우 도커허브 credentials 주입
+                            if (params.TARGET_ARGO == "argocd-image-updater") {
+                                // https://argocd-image-updater.readthedocs.io/en/stable/basics/update-methods/
+                                withCredentials([usernamePassword(credentialsId: 'docker_password', passwordVariable: 'PASSWORD', usernameVariable: 'USERNAME')]) {
+                                    HELM_DEPLOY_COMMAND += " --set config.registries[0].credentials=env:DOCKER_HUB_CREDS="+ '${USERNAME}' + ":" + '${PASSWORD}'
+                                }
+                            }
+
+                            sh "eval ${HELM_DEPLOY_COMMAND}"
+                            // sh "helm update argo-cd -n argo --kubeconfig " + '${KUBECONFIG}' + " --wait --timeout=10m "
+                        }
+
+                    } else if (params.DEPLOY_TYPE == "helm_uninstall") {
+                        withCredentials([file(credentialsId: 'k8s_master_config', variable: 'KUBECONFIG')]) {
+                            sh "helm uninstall ${params.TARGET_ARGO} -n argo --kubeconfig " + '${KUBECONFIG}'
+
+                            // CRD 삭제
+                            if (params.TARGET_ARGO == "argo-cd") {
+                                sh "kubectl delete crd applications.argoproj.io applicationsets.argoproj.io appprojects.argoproj.io --kubeconfig " + '${KUBECONFIG}'
+                            }
+                            if (params.TARGET_ARGO == "argo-rollouts") {
+                                sh "kubectl delete crd analysisruns.argoproj.io analysistemplates.argoproj.io clusteranalysistemplates.argoproj.io --kubeconfig " + '${KUBECONFIG}'
+                                sh "kubectl delete crd experiments.argoproj.io rollouts.argoproj.io --kubeconfig " + '${KUBECONFIG}'
+                            }
+                        }
+                    } else {
+                        echo "skip deploy"
+                    }
+                }
+            }
+        }
+    }
+}
