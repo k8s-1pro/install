@@ -84,7 +84,7 @@ yum install -y git-2.39.3-1.el8_8
 echo '======== [7] Jenkins 설치  ========'
 wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
 rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io-2023.key
-yum install -y java-11-openjdk jenkins-2.414.2-1.1
+yum install -y jenkins-2.414.2-1.1
 systemctl enable jenkins
 systemctl start jenkins
 
