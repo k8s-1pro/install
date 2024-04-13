@@ -1,0 +1,53 @@
+pipeline {
+    agent any
+
+    parameters {
+        choice(choices: ['option', 'namespace_create', 'namespace_delete', 'helm_upgrade', 'helm_uninstall'], name: 'DEPLOY_TYPE', description: '배포 타입 선택')
+        choice(choices: ['option', 'nginx-ingress'], name: 'TARGET_NGINX', description: '설치 대상 선택')
+    }
+
+    environment {
+        DOCKERHUB_USERNAME = '1pro'
+        GITHUB_URL = 'https://github.com/k8s-1pro/install.git'
+        INSTALL_PATH = 'ground/cicd-server/nginx-ingress'
+    }
+
+    stages {
+        stage('네임스페이스 관리') {
+            steps {
+                script{
+                    if (params.DEPLOY_TYPE == "namespace_create") {
+                        sh "kubectl apply -f ./${INSTALL_PATH}/kubectl/namespace.yaml"
+
+                    } else if (params.DEPLOY_TYPE == "namespace_delete") {
+                        sh "kubectl delete -f ./${INSTALL_PATH}/kubectl/namespace.yaml"
+                    } else {
+                        echo "skip namespace"
+                    }
+                }
+            }
+        }
+
+        stage('헬름 배포 관리') {
+            steps {
+                script{
+                    if (params.DEPLOY_TYPE == "helm_upgrade") {
+                        HELM_DEPLOY_COMMAND =  "helm upgrade ${params.TARGET_NGINX} ./${INSTALL_PATH}/helm/${params.TARGET_NGINX} " +
+                            " -f ./${INSTALL_PATH}/helm/${params.TARGET_NGINX}/values-dev.yaml" +
+                            " -n nginx-ingress --install " +
+                            " --wait --timeout=10m "   // 최대 10분으로 설정
+
+                        sh "eval ${HELM_DEPLOY_COMMAND}"
+                        // sh "helm update nginx-ingress argo --kubeconfig " + '${KUBECONFIG}' + " --wait --timeout=10m "
+
+                    } else if (params.DEPLOY_TYPE == "helm_uninstall") {
+                        sh "helm uninstall ${params.TARGET_NGINX} -n nginx-ingress "
+
+                    } else {
+                        echo "skip deploy"
+                    }
+                }
+            }
+        }
+    }
+}

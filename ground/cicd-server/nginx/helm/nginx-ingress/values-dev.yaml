@@ -1,0 +1,22 @@
+controller:
+
+  replicaCount: 1
+
+  # nginx 설치시 ingressClass 생성 (기본 설정)
+  ingressClass:
+    name: nginx
+    create: true
+
+  # LoadBalancer Service 생성 (기본 설정)
+  service:
+    create: true
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+
+# Nginx는 kube-apiserver에 호출해서 Pod IP를 확인해야 하기 때문에 Cluster 레벨의 Role 권한 필요  (기본 설정)
+rbac:
+  create: true
+
+# 프로메테우스 모니터링 설정 (사용 안함 처리)
+prometheus:
+  create: false
