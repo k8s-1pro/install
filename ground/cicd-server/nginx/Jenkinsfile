@@ -34,11 +34,8 @@ pipeline {
                     if (params.DEPLOY_TYPE == "helm_upgrade") {
                         HELM_DEPLOY_COMMAND =  "helm upgrade ${params.TARGET_NGINX} ./${INSTALL_PATH}/helm/${params.TARGET_NGINX} " +
                             " -f ./${INSTALL_PATH}/helm/${params.TARGET_NGINX}/values-dev.yaml" +
-                            " -n nginx-ingress --install " +
-                            " --wait --timeout=10m "   // 최대 10분으로 설정
-
+                            " -n nginx-ingress --install "
                         sh "eval ${HELM_DEPLOY_COMMAND}"
-                        // sh "helm update nginx-ingress argo --kubeconfig " + '${KUBECONFIG}' + " --wait --timeout=10m "
 
                     } else if (params.DEPLOY_TYPE == "helm_uninstall") {
                         sh "helm uninstall ${params.TARGET_NGINX} -n nginx-ingress "
