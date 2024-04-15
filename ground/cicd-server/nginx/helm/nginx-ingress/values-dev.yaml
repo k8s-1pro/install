@@ -12,6 +12,16 @@ controller:
     create: true
     type: LoadBalancer
     externalTrafficPolicy: Local
+    httpPort:
+      enable: true
+      port: 80
+      nodePort: 31080
+      targetPort: 80
+    httpsPort:
+      enable: true
+      port: 443
+      nodePort: 31443
+      targetPort: 443
 
 # Nginx는 kube-apiserver에 호출해서 Pod IP를 확인해야 하기 때문에 Cluster 레벨의 Role 권한 필요  (기본 설정)
 rbac:
