@@ -2,29 +2,24 @@ controller:
   # Nginx Snippet 기능 허용 (default : false)
   allowSnippetAnnotations: true
 
-  # Nginx 설치시 ingressClass 생성
-  ingressClassResource:
-    name: nginx
-    enabled: true
-    controllerValue: "k8s.io/ingress-nginx"
-  
-  # 생성한 ingressClass를 Nginx에 적용
-  ingressClass: nginx
-  
   # Nginx 설치시 LoadBalancer 타입의 Service 생성
   service:
     enabled: true
     type: LoadBalancer
     
-    # Node Port 번호 지정 (Service port 80, 443)
+    # Node Port 번호 지정
     nodePorts:
       http: "31080"
       https: "31443"
 
-# Nginx 설치시 ClusterRole과 ClusterRoleBindding 생성 및 할당
-rbac:
-  create: true
+  # Nginx 설치시 ingressClass 생성 (default : true)
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    controllerValue: "k8s.io/ingress-nginx"
+  # 생성한 ingressClass를 Nginx에 적용
+  ingressClass: nginx
 
-# Nginx 설치시 serviceAccount 생성 
-serviceAccount:
+# Nginx 설치시 ClusterRole과 ClusterRoleBindding 생성 및 할당 (default : true)
+rbac:
   create: true
