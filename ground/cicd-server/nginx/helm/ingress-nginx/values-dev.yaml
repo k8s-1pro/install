@@ -16,7 +16,7 @@ controller:
     enabled: true
     type: LoadBalancer
     
-    # Node Port 번호 지정 (default 80, 443)
+    # Node Port 번호 지정 (Service port 80, 443)
     nodePorts:
       http: "31080"
       https: "31443"
