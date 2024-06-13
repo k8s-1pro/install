@@ -79,7 +79,7 @@ chmod +x /etc/profile.d/gradle.sh
 source /etc/profile.d/gradle.sh
 
 echo '======== [6] Git 설치  ========'
-yum install -y git-2.39.3-1.el8_8
+yum install -y git-2.43.0-1.el8
 
 echo '======== [7] Jenkins 설치  ========'
 wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
