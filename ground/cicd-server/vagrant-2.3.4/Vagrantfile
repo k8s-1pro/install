@@ -25,7 +25,8 @@ $install_cicd = <<-SHELL
 
 echo '======== [1] Rocky Linux 기본 설정 ========'
 echo '======== [1-1] 패키지 업데이트 ========'
-yum -y update
+# 강의와 동일한 실습 환경을 유지하기 위해 Linux Update 주석 처리
+# yum -y update
 
 echo '======== [1-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
