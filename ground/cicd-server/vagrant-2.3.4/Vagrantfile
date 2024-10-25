@@ -80,7 +80,8 @@ chmod +x /etc/profile.d/gradle.sh
 source /etc/profile.d/gradle.sh
 
 echo '======== [6] Git 설치  ========'
-yum install -y git-2.43.0-1.el8
+# 기존엔 git-2.43.0-1.el8 버전을 Fix하였으나 Repository에 최신 버전만 업로드 됨으로 수정
+yum install -y git
 
 echo '======== [7] Jenkins 설치  ========'
 wget -O /etc/yum.repos.d/jenkins.repo https://pkg.jenkins.io/redhat-stable/jenkins.repo
