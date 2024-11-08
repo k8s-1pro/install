@@ -28,6 +28,9 @@ echo '======== [1-1] 패키지 업데이트 ========'
 # 강의와 동일한 실습 환경을 유지하기 위해 Linux Update 주석 처리
 # yum -y update
 
+# 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
+# echo "root:새로운비밀번호" | chpasswd
+
 echo '======== [1-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
