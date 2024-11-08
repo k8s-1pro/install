@@ -45,6 +45,11 @@ echo '======== [4-1] 패키지 업데이트 ========'
 # 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
 # echo "root:새로운비밀번호" | chpasswd
 
+# root 로그인 허용 설정
+sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+kill -HUP $(pgrep -f '/usr/sbin/sshd')
+
 echo '======== [4-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 
@@ -97,7 +102,16 @@ echo '======== [6-2-1-1] docker engine 설치 ========'
 echo '======== [6-2-1-1] repo 설정 ========'
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
+echo '======== [6-2-1-1] containerd 설치 ========'
+yum install -y containerd.io-1.6.33-3.1.el9
+systemctl daemon-reload
+systemctl enable --now containerd
 
+echo '======== [6-3] 컨테이너 런타임 : cri 활성화 ========'
+# defualt cgroupfs에서 systemd로 변경 (kubernetes default는 systemd)
+containerd config default > /etc/containerd/config.toml
+sed -i 's/ SystemdCgroup = false/ SystemdCgroup = true/' /etc/containerd/config.toml
+systemctl restart containerd
 
 echo '======== [7] kubeadm 설치 ========'
 echo '======== [7] repo 설정 ========'
@@ -111,12 +125,13 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v1.30/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 
-
 echo '======== [7] SELinux 설정 ========'
 setenforce 0
 sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
 
-
+echo '======== [7] kubelet, kubeadm, kubectl 패키지 설치 ========'
+yum install -y kubelet-1.30.5-150500.1.1.x86_64 kubeadm-1.30.5-150500.1.1.x86_64 kubectl-1.30.5-150500.1.1.x86_64 --disableexcludes=kubernetes
+systemctl enable --now kubelet
 
 SHELL
 
@@ -124,6 +139,19 @@ SHELL
 $install_master = <<-SHELL
 
 echo '======== [8] kubeadm으로 클러스터 생성  ========'
+echo '======== [8-1] 클러스터 초기화 (Pod Network 세팅) ========'
+kubeadm init --pod-network-cidr=20.96.0.0/16 --apiserver-advertise-address 192.168.56.30
+
+echo '======== [8-2] kubectl 사용 설정 ========'
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+
+echo '======== [8-3] Pod Network 설치 (calico) ========'
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.29.0/calico.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.29.0/calico-custom.yaml
+
+
 
 
 SHELL
