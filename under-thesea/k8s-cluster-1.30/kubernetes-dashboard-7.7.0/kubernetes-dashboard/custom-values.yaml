@@ -1,0 +1,10 @@
+web:
+  containers:
+    args:
+      - --enable-skip-login
+
+metrics-server:
+  enabled: true
+
+kong:
+  enabled: false
