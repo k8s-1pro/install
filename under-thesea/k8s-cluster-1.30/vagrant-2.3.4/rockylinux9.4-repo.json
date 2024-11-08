@@ -1,0 +1,15 @@
+{
+  "name" : "rockylinux/9.4",
+  "description" : "Rocky Linux 9.4",
+  "versions" : [
+    {
+      "version" : "9.4-20240509.0",
+      "providers" : [
+        {
+          "name" : "virtualbox",
+          "url" : "https://dl.rockylinux.org/vault/rocky/9.4/images/x86_64/Rocky-9-Vagrant-Vbox-9.4-20240509.0.x86_64.box"
+        }
+      ]
+    }
+  ]
+}
