@@ -8,3 +8,5 @@ metrics-server:
 
 kong:
   enabled: false
+  http:
+    nodePort: 30000

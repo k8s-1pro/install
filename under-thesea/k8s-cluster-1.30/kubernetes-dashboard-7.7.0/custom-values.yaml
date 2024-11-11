@@ -1,13 +1,8 @@
-api:
-  containers:
-    args:
-      - --enable-skip-login
-
 metrics-server:
   enabled: true
 
 kong:
   proxy:
     type: NodePort
-    http:
+    tls:
       nodePort: 30000

@@ -2,7 +2,7 @@ NodeCnt = 2
 
 Vagrant.configure("2") do |config|
     
-  config.vm.box = "rockylinux/9.4"
+  config.vm.box = "rockylinux/8.9"
   # Disk 확장설정 추가
   config.disksize.size = "30GB"
 
@@ -46,9 +46,9 @@ echo '======== [4-1] 패키지 업데이트 ========'
 # echo "root:새로운비밀번호" | chpasswd
 
 # root 로그인 허용 설정
-sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-kill -HUP $(pgrep -f '/usr/sbin/sshd')
+#sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+#sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+#kill -HUP $(pgrep -f '/usr/sbin/sshd')
 
 echo '======== [4-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
@@ -151,6 +151,16 @@ echo '======== [8-3] Pod Network 설치 (calico) ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico-custom.yaml
 
+echo '======== [8-4] Master에 Pod를 생성 할수 있도록 설정 ========'
+kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane-
+
+
+echo '======== [9] 쿠버네티스 편의기능 설치 ========'
+echo '======== [9-1] kubectl 자동완성 기능 ========'
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+echo 'alias k=kubectl' >>~/.bashrc
+echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+
 
 echo '======== [9-2] Dashboard 설치 ========'
 echo '======== [9-2-1] Helm 설치 ========'
@@ -158,13 +168,14 @@ curl -O https://get.helm.sh/helm-v3.15.4-linux-amd64.tar.gz
 tar -zxvf helm-v3.15.4-linux-amd64.tar.gz
 mv linux-amd64/helm /usr/bin/helm
 
-#helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-#helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f custom-values.yaml
+echo '======== [9-2-2] Helm-Dashboard설치 ========'
+helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/custom-values.yaml
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f custom-values.yaml
 
-
-#curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/custom-values.yaml
-#helm install my-kubernetes-dashboard k8s-dashboard/kubernetes-dashboard --version 7.7.0 -f custom-values.yaml
-#helm upgrade --install kubernetes-dashboard k8s-dashboard/kubernetes-dashboard -f custom-values.yaml --version 7.7.0 --create-namespace --namespace kubernetes-dashboard
-
+echo '======== [9-2-3] Dashboard Admin 접근 권한 생성 ========'
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/clusterrolebinding.yaml
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/secret.yaml
 
 SHELL
