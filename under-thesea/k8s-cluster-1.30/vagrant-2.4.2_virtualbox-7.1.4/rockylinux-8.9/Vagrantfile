@@ -2,7 +2,7 @@ NodeCnt = 2
 
 Vagrant.configure("2") do |config|
     
-  config.vm.box = "rockylinux/9.4"
+  config.vm.box = "rockylinux/8.9"
   # Disk 확장설정 추가
   config.disksize.size = "30GB"
 
@@ -15,8 +15,8 @@ Vagrant.configure("2") do |config|
     master.vm.hostname = "k8s-master"
     master.vm.network "private_network", ip: "192.168.56.30"
     master.vm.provider :virtualbox do |vb|
-      vb.memory = 2048
-      vb.cpus = 2
+      vb.memory = 3072
+      vb.cpus = 3
       vb.customize ["modifyvm", :id, "--firmware", "efi"]
 	end
     master.vm.provision :shell, privileged: true, inline: $install_master
@@ -44,11 +44,6 @@ echo '======== [4-1] 패키지 업데이트 ========'
 
 # 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
 # echo "root:새로운비밀번호" | chpasswd
-
-# root 로그인 허용 설정
-sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
-sed -i 's/^#PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
-kill -HUP $(pgrep -f '/usr/sbin/sshd')
 
 echo '======== [4-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
@@ -103,7 +98,7 @@ echo '======== [6-2-1-1] repo 설정 ========'
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
 
 echo '======== [6-2-1-1] containerd 설치 ========'
-yum install -y containerd.io-1.6.33-3.1.el9
+yum install -y containerd.io-1.6.32-3.1.el8
 systemctl daemon-reload
 systemctl enable --now containerd
 
@@ -151,9 +146,6 @@ echo '======== [8-3] Pod Network 설치 (calico) ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/calico-3.28.2/calico-custom.yaml
 
-echo '======== [8-4] Master에 Pod를 생성 할수 있도록 설정 ========'
-kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane-
-
 
 echo '======== [9] 쿠버네티스 편의기능 설치 ========'
 echo '======== [9-1] kubectl 자동완성 기능 ========'
@@ -170,12 +162,12 @@ mv linux-amd64/helm /usr/bin/helm
 
 echo '======== [9-2-2] Helm-Dashboard설치 ========'
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/custom-values.yaml
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/kubernetes-dashboard/custom-values.yaml
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f custom-values.yaml
 
 echo '======== [9-2-3] Dashboard Admin 접근 권한 생성 ========'
-curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml
-curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/clusterrolebinding.yaml
-curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/secret.yaml
+kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml
+kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/clusterrolebinding.yaml
+kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/secret.yaml
 
 SHELL

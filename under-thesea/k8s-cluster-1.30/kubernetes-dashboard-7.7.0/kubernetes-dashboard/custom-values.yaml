@@ -1,12 +1,8 @@
-web:
-  containers:
-    args:
-      - --enable-skip-login
-
 metrics-server:
   enabled: true
 
 kong:
-  enabled: false
-  http:
-    nodePort: 30000
+  proxy:
+    type: NodePort
+    tls:
+      nodePort: 30000

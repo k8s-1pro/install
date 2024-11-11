@@ -1,0 +1,15 @@
+{
+  "name" : "rockylinux/8.9",
+  "description" : "Rocky Linux 8.9",
+  "versions" : [
+    {
+      "version" : "8.9-20231119.0",
+      "providers" : [
+        {
+          "name" : "virtualbox",
+          "url" : "https://dl.rockylinux.org/vault/rocky/8.9/images/x86_64/Rocky-8-Vagrant-Vbox-8.9-20231119.0.x86_64.box"
+        }
+      ]
+    }
+  ]
+}

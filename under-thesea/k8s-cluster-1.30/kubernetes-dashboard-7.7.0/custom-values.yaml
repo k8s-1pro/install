@@ -1,8 +1,0 @@
-metrics-server:
-  enabled: true
-
-kong:
-  proxy:
-    type: NodePort
-    tls:
-      nodePort: 30000
