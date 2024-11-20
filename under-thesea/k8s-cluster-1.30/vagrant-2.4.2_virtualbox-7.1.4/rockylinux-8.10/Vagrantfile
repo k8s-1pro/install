@@ -15,8 +15,8 @@ Vagrant.configure("2") do |config|
     master.vm.hostname = "k8s-master"
     master.vm.network "private_network", ip: "192.168.56.30"
     master.vm.provider :virtualbox do |vb|
-      vb.memory = 3072
-      vb.cpus = 3
+      vb.memory = 4096
+      vb.cpus = 4
       vb.customize ["modifyvm", :id, "--firmware", "efi"]
 	end
     master.vm.provision :shell, privileged: true, inline: $install_master
@@ -39,8 +39,7 @@ $install_default = <<-SHELL
 
 echo '======== [4] Rocky Linux 기본 설정 ========'
 echo '======== [4-1] 패키지 업데이트 ========'
-# 강의와 동일한 실습 환경을 유지하기 위해 Linux Update 주석 처리
-# yum -y update
+yum -y update --releasever=8.10
 
 # 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
 # echo "root:새로운비밀번호" | chpasswd
@@ -99,7 +98,7 @@ dnf -y install dnf-plugins-core
 dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
 
 echo '======== [6-2-1-1] containerd 설치 ========'
-dnf install -y containerd.io-1.6.33-3.1.el8
+dnf install -y containerd.io-1.6.32-3.1.el8
 systemctl daemon-reload
 systemctl enable --now containerd
 
@@ -167,8 +166,8 @@ curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s
 helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f custom-values.yaml
 
 echo '======== [9-2-3] Dashboard Admin 접근 권한 생성 ========'
-kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml
-kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/clusterrolebinding.yaml
-kubectl apply -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/secret.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/clusterrolebinding.yaml
+kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/secret.yaml
 
 SHELL
