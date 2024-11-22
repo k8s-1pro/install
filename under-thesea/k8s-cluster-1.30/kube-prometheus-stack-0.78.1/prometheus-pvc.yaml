@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  namespace: kube-promethues
+  namespace: monitoring
   name: promethues-pvc
 spec:
   resources:
@@ -10,4 +10,4 @@ spec:
   accessModes:
     - ReadWriteOnce
   volumeName: promethues-pv
-  storageClassName: promethues-storage-class
+  storageClassName: monitoring-sc
