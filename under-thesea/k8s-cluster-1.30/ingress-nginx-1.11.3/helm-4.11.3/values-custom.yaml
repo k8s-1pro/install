@@ -1,0 +1,46 @@
+controller:
+
+  image:
+    registry: registry.k8s.io
+    image: ingress-nginx/controller
+    tag: "v1.11.3"
+
+  config:
+    load-balance: "ewma"
+
+  # Nginx 설치시 LoadBalancer 타입의 Service 생성
+  service:
+    type: ClusterIP
+    externalIPs:
+      - 192.168.56.30
+
+  # Nginx 설치시 ingressClass 생성
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true
+    controllerValue: "k8s.io/ingress-nginx"
+
+  ingressClass: nginx
+
+  extraEnvs:
+    - name: TZ
+      value: Asia/Seoul
+
+  replicaCount: 1
+
+  nodeSelector:
+    kubernetes.io/hostname: k8s-master
+
+  resources:
+    limits:
+      cpu: 200m
+      memory: 180Mi
+    requests:
+      cpu: 100m
+      memory: 90Mi
+
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"

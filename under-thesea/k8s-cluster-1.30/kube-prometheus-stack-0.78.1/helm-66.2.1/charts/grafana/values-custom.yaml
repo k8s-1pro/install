@@ -1,0 +1,35 @@
+replicas: 1
+
+image:
+  registry: docker.io
+  repository: grafana/grafana
+  tag: ""
+
+testFramework:
+  enabled: false
+
+service:
+  enabled: true
+  type: NodePort
+  nodePort: 30001
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+persistence:
+  type: pvc
+  enabled: true
+  # storageClassName: default
+  accessModes:
+    - ReadWriteMany
+  size: 1Gi
+  existingClaim: grafana
+
+adminUser: admin
+adminPassword: admin
+

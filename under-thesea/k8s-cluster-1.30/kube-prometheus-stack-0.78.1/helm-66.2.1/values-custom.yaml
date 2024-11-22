@@ -1,0 +1,93 @@
+grafana:
+  defaultDashboardsTimezone: Asia/Seoul
+  adminUser: admin
+  adminPassword: admin
+
+  replicas: 1
+
+  image:
+    registry: docker.io
+    repository: grafana/grafana
+    tag: ""
+
+  testFramework:
+    enabled: false
+
+  service:
+    enabled: true
+    type: NodePort
+    nodePort: 30001
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  persistence:
+    type: pvc
+    enabled: true
+    accessModes:
+      - ReadWriteMany
+    size: 1Gi
+    existingClaim: grafana-pvc
+
+prometheusOperator:
+  image:
+    registry: quay.io
+    repository: prometheus-operator/prometheus-operator
+    tag: ""
+
+  prometheusConfigReloader:
+    image:
+      registry: quay.io
+      repository: prometheus-operator/prometheus-config-reloader
+      tag: ""
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 50Mi
+      limits:
+        cpu: 200m
+        memory: 100Mi
+
+prometheus:
+  prometheusSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/prometheus
+      tag: v2.55.1
+
+    nodeSelector: {}
+
+    retention: 10d
+    retentionSize: ""
+    replicas: 1
+    logLevel: info
+    logFormat: logfmt
+
+    resources:
+      requests:
+        cpu: 100m
+        memory: 200Mi
+      limits:
+        cpu: 200m
+        memory: 400Mi
+
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: PersistentVolumeClaim
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
