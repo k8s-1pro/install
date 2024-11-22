@@ -4,4 +4,4 @@ metadata:
   name: monitoring-storage-class
 provisioner: kubernetes.io/no-provisioner
 reclaimPolicy: Retain
-volumeBindingMode: WaitForFirstConsumer
+volumeBindingMode: Immediate
