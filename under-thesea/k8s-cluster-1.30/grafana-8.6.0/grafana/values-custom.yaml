@@ -11,6 +11,7 @@ testFramework:
 
 ingress:
   enabled: true
+  ingressClassName: nginx-addons
   hosts:
     - grafana
 
@@ -26,9 +27,9 @@ persistence:
   type: pvc
   enabled: true
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
   size: 1Gi
-  existingClaim: grafana-441
+  existingClaim: grafana
 
 adminUser: admin
 adminPassword: admin
