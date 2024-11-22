@@ -10,4 +10,4 @@ spec:
   nfs:
     server: 192.168.56.30
     path: /file-storage/monitoring/prometheus
-  storageClassName: promethues-storage-class
+  storageClassName: monitoring-sc
