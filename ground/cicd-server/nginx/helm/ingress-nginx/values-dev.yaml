@@ -12,7 +12,7 @@ controller:
       http: "31080"
       https: "31443"
 
-  # Nginx 설치시 ingressClass 생성 (default : true)
+  # Nginx 설치시 ingressClass 생성 (default : false)
   ingressClassResource:
     name: nginx
     enabled: true

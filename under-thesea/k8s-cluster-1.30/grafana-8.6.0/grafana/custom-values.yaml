@@ -1,0 +1,125 @@
+
+testFramework:
+  enabled: false
+
+## Expose the grafana service to be accessed from outside the cluster (LoadBalancer service).
+## or access it from within the cluster (ClusterIP service). Set the service type and the port to serve it.
+## ref: http://kubernetes.io/docs/user-guide/services/
+##
+service:
+  enabled: true
+  type: ClusterIP
+  # Set the ip family policy to configure dual-stack see [Configure dual-stack](https://kubernetes.io/docs/concepts/services-networking/dual-stack/#services)
+  ipFamilyPolicy: ""
+  # Sets the families that should be supported and the order in which they should be applied to ClusterIP as well. Can be IPv4 and/or IPv6.
+  ipFamilies: []
+  loadBalancerIP: ""
+  loadBalancerClass: ""
+  loadBalancerSourceRanges: []
+  port: 80
+  targetPort: 3000
+    # targetPort: 4181 To be used with a proxy extraContainer
+  ## Service annotations. Can be templated.
+  annotations: {}
+  labels: {}
+  portName: service
+  # Adds the appProtocol field to the service. This allows to work with istio protocol selection. Ex: "http" or "tcp"
+  appProtocol: ""
+
+
+ingress:
+  enabled: false
+  # For Kubernetes >= 1.18 you should specify the ingress-controller via the field ingressClassName
+  # See https://kubernetes.io/blog/2020/04/02/improvements-to-the-ingress-api-in-kubernetes-1.18/#specifying-the-class-of-an-ingress
+  # ingressClassName: nginx
+  # Values can be templated
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  labels: {}
+  path: /
+
+  # pathType is only for k8s >= 1.1=
+  pathType: Prefix
+
+  hosts:
+    - chart-example.local
+  ## Extra paths to prepend to every host configuration. This is useful when working with annotation based services.
+  extraPaths: []
+  # - path: /*
+  #   backend:
+  #     serviceName: ssl-redirect
+  #     servicePort: use-annotation
+  ## Or for k8s > 1.19
+  # - path: /*
+  #   pathType: Prefix
+  #   backend:
+  #     service:
+  #       name: ssl-redirect
+  #       port:
+  #         name: use-annotation
+
+
+  tls: []
+  #  - secretName: chart-example-tls
+  #    hosts:
+  #      - chart-example.local
+
+resources:
+  limits:
+    cpu: 400m
+    memory: 256Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+## Enable persistence using Persistent Volume Claims
+## ref: https://kubernetes.io/docs/user-guide/persistent-volumes/
+##
+persistence:
+  type: pvc
+  enabled: false
+  # storageClassName: default
+  accessModes:
+    - ReadWriteOnce
+  size: 10Gi
+  # annotations: {}
+  finalizers:
+    - kubernetes.io/pvc-protection
+  # selectorLabels: {}
+  ## Sub-directory of the PV to mount. Can be templated.
+  # subPath: ""
+  ## Name of an existing PVC. Can be templated.
+  # existingClaim:
+  ## Extra labels to apply to a PVC.
+  extraPvcLabels: {}
+  disableWarning: false
+
+  ## If persistence is not enabled, this allows to mount the
+  ## local storage in-memory to improve performance
+  ##
+  inMemory:
+    enabled: false
+    ## The maximum usage on memory medium EmptyDir would be
+    ## the minimum value between the SizeLimit specified
+    ## here and the sum of memory limits of all containers in a pod
+    ##
+    # sizeLimit: 300Mi
+
+  ## If 'lookupVolumeName' is set to true, Helm will attempt to retrieve
+  ## the current value of 'spec.volumeName' and incorporate it into the template.
+  lookupVolumeName: true
+
+# Administrator credentials when not using an existing secret (see below)
+adminUser: admin
+adminPassword: admin
+
+# Use an existing secret for the admin user.
+admin:
+  ## Name of the secret. Can be templated.
+  existingSecret: ""
+  userKey: admin-user
+  passwordKey: admin-password
+
+
+
