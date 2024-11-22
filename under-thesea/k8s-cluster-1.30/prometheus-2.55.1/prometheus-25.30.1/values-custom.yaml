@@ -27,3 +27,6 @@ server:
 
 kube-state-metrics:
   enabled: false
+
+alertmanager:
+  enabled: false
