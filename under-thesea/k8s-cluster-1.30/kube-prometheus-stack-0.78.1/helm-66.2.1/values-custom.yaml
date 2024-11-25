@@ -86,8 +86,10 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
-          storageClassName: PersistentVolumeClaim
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
               storage: 1Gi
+        selector:
+          matchLabels:
+            app.kubernetes.io/name: prometheus-volume
