@@ -1,50 +1,20 @@
-grafana:
-  defaultDashboardsTimezone: Asia/Seoul
-  adminUser: admin
-  adminPassword: admin
 
-  replicas: 1
-
-  image:
-    registry: docker.io
-    repository: grafana/grafana
-    tag: ""
-
-  testFramework:
-    enabled: false
-
-  service:
-    enabled: true
-    type: NodePort
-    nodePort: 30001
-
-  ingress:
-    enabled: true
-    ingressClassName: nginx
-    hosts:
-      - grafana
-
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 200m
-      memory: 256Mi
-
-  persistence:
-    type: pvc
-    enabled: true
-    accessModes:
-      - ReadWriteMany
-    size: 1Gi
-    existingClaim: grafana-pvc
 
 prometheusOperator:
   image:
     registry: quay.io
     repository: prometheus-operator/prometheus-operator
     tag: ""
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 50Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
+  nodeSelector: {}
 
   prometheusConfigReloader:
     image:
@@ -78,10 +48,10 @@ prometheus:
     resources:
       requests:
         cpu: 100m
-        memory: 200Mi
+        memory: 256Mi
       limits:
         cpu: 200m
-        memory: 400Mi
+        memory: 512Mi
 
     storageSpec:
       volumeClaimTemplate:
@@ -90,6 +60,112 @@ prometheus:
           resources:
             requests:
               storage: 1Gi
-        selector:
-          matchLabels:
-            app.kubernetes.io/name: prometheus-volume
+          selector:
+            matchLabels:
+              app.kubernetes.io/name: prometheus-volume
+
+
+alertmanager:
+  alertmanagerSpec:
+    image:
+      registry: quay.io
+      repository: prometheus/alertmanager
+      tag: v0.27.0
+
+    logLevel: info
+    replicas: 1
+    retention: 20h
+    storage: {}
+    nodeSelector: {}
+    resources:
+      requests:
+        cpu: 100m
+        memory: 48Mi
+      limits:
+        cpu: 200m
+        memory: 96Mi
+
+
+grafana:
+  defaultDashboardsTimezone: Asia/Seoul
+  adminUser: admin
+  adminPassword: admin
+
+  replicas: 1
+
+  image:
+    registry: docker.io
+    repository: grafana/grafana
+    tag: ""
+
+  testFramework:
+    enabled: false
+
+  ingress:
+    enabled: true
+    ingressClassName: nginx
+    hosts:
+      - grafana
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  persistence:
+    type: pvc
+    enabled: true
+    accessModes:
+      - ReadWriteMany
+    size: 1Gi
+    existingClaim: grafana-pvc
+
+  sidecar:
+    image:
+      registry: quay.io
+      repository: kiwigrid/k8s-sidecar
+      tag: 1.28.0
+
+    resources:
+      requests:
+        cpu: 20m
+        memory: 128Mi
+      limits:
+        cpu: 40m
+        memory: 256Mi
+
+prometheus-node-exporter:
+  image:
+    registry: quay.io
+    repository: prometheus/node-exporter
+    tag: ""
+
+  resources:
+    requests:
+      cpu: 20m
+      memory: 24Mi
+    limits:
+      cpu: 40m
+      memory: 48Mi
+
+kube-state-metrics:
+  image:
+    registry: registry.k8s.io
+    repository: kube-state-metrics/kube-state-metrics
+
+  replicas: 1
+
+  resources:
+    requests:
+      cpu: 20m
+      memory: 32Mi
+    limits:
+      cpu: 40m
+      memory: 64Mi
+
+  metricLabelsAllowlist:
+    - nodes=[*]
+#    - pods=[*]

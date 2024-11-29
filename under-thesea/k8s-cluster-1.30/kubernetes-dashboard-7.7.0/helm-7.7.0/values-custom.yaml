@@ -6,3 +6,12 @@ kong:
     type: NodePort
     tls:
       nodePort: 30000
+
+app:
+  scheduling:
+    nodeSelector:
+      kubernetes.io/hostname: k8s-master
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"

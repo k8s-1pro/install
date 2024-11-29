@@ -19,6 +19,7 @@ Vagrant.configure("2") do |config|
         vb.memory = 2048
         vb.cpus = 2
         vb.customize ["modifyvm", :id, "--firmware", "efi"]
+        vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
 	  end
     end
   end
@@ -42,8 +43,6 @@ echo '======== [4-3] Disk 확장 / Bug: soft lockup 설정 추가========'
 yum install -y cloud-utils-growpart
 growpart /dev/sda 4
 xfs_growfs /dev/sda4
-echo 0 > /proc/sys/kernel/hung_task_timeout_secs
-echo "kernel.watchdog_thresh = 20" >> /etc/sysctl.conf
 
 echo '======== [4-4] [WARNING FileExisting-tc]: tc not found in system path 로그 관련 업데이트 ========'
 yum install -y yum-utils iproute-tc
