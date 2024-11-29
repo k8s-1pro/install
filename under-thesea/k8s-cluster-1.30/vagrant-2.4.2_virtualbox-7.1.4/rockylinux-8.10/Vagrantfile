@@ -28,8 +28,8 @@ Vagrant.configure("2") do |config|
       node.vm.hostname = "k8s-worker#{i}"
       node.vm.network "private_network", ip: "192.168.56.#{i + 30}"
       node.vm.provider :virtualbox do |vb|
-        vb.memory = 2048
-        vb.cpus = 2
+        vb.memory = 3072
+        vb.cpus = 3
         vb.customize ["modifyvm", :id, "--firmware", "efi"]
         vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
 	  end
@@ -164,8 +164,8 @@ mv linux-amd64/helm /usr/bin/helm
 
 echo '======== [9-2-2] Helm-Dashboard설치 ========'
 helm repo add kubernetes-dashboard https://kubernetes.github.io/dashboard/
-curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/helm-7.7.0/custom-values.yaml
-helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f custom-values.yaml
+curl -O https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/helm-7.7.0/values-custom.yaml
+helm upgrade --install kubernetes-dashboard kubernetes-dashboard/kubernetes-dashboard --create-namespace --namespace kubernetes-dashboard -f values-custom.yaml
 
 echo '======== [9-2-3] Dashboard Admin 접근 권한 생성 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.30/kubernetes-dashboard-7.7.0/serviceaccount.yaml

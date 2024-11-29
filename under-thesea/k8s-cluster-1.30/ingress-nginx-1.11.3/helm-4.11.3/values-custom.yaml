@@ -8,10 +8,10 @@ controller:
   config:
     load-balance: "ewma"
 
-  #service:
-  #  type: ClusterIP
-  #  externalIPs:
-  #    - 192.168.56.30
+  service:
+    type: ClusterIP
+    externalIPs:
+      - 192.168.56.30
 
   # Nginx 설치시 ingressClass 생성
   ingressClassResource:
