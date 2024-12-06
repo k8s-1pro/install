@@ -1,13 +1,12 @@
 controller:
 
+  # 커뮤니티용 - kubernetes/ingress-nginx
   image:
     registry: registry.k8s.io
     image: ingress-nginx/controller
     tag: "v1.11.3"
 
-  config:
-    load-balance: "ewma"
-
+  # Service에 externalIPs 속성 추가
   service:
     type: ClusterIP
     externalIPs:
@@ -19,7 +18,6 @@ controller:
     enabled: true
     default: true
     controllerValue: "k8s.io/ingress-nginx"
-
   ingressClass: nginx
 
   extraEnvs:
@@ -28,16 +26,17 @@ controller:
 
   replicaCount: 1
 
+  resources:
+    requests:
+      cpu: 50m
+      memory: 100Mi
+    limits:
+      cpu: 100m
+      memory: 100Mi
+
+  # Master 노드에 스케줄링 되도록 tolerations 설정
   nodeSelector:
     kubernetes.io/hostname: k8s-master
-
-  resources:
-    limits:
-      cpu: 200m
-      memory: 180Mi
-    requests:
-      cpu: 100m
-      memory: 90Mi
 
   tolerations:
     - key: "node-role.kubernetes.io/control-plane"

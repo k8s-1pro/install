@@ -8,11 +8,11 @@ prometheusOperator:
 
   resources:
     requests:
-      cpu: 50m
-      memory: 50Mi
+      cpu: 20m
+      memory: 48Mi
     limits:
-      cpu: 100m
-      memory: 100Mi
+      cpu: 40m
+      memory: 48Mi
 
   nodeSelector: {}
 
@@ -24,11 +24,11 @@ prometheusOperator:
 
     resources:
       requests:
-        cpu: 100m
-        memory: 50Mi
+        cpu: 20m
+        memory: 32Mi
       limits:
-        cpu: 200m
-        memory: 100Mi
+        cpu: 40m
+        memory: 32Mi
 
 prometheus:
   prometheusSpec:
@@ -40,15 +40,13 @@ prometheus:
     nodeSelector: {}
 
     retention: 10d
-    retentionSize: ""
+
     replicas: 1
-    logLevel: info
-    logFormat: logfmt
 
     resources:
       requests:
         cpu: 100m
-        memory: 256Mi
+        memory: 512Mi
       limits:
         cpu: 200m
         memory: 512Mi
@@ -56,6 +54,7 @@ prometheus:
     storageSpec:
       volumeClaimTemplate:
         spec:
+          #storageClassName: "storageClassName"
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
@@ -64,7 +63,6 @@ prometheus:
             matchLabels:
               app.kubernetes.io/name: prometheus-volume
 
-
 alertmanager:
   alertmanagerSpec:
     image:
@@ -72,18 +70,17 @@ alertmanager:
       repository: prometheus/alertmanager
       tag: v0.27.0
 
-    logLevel: info
     replicas: 1
     retention: 20h
     storage: {}
     nodeSelector: {}
     resources:
       requests:
-        cpu: 100m
-        memory: 48Mi
+        cpu: 40m
+        memory: 32Mi
       limits:
-        cpu: 200m
-        memory: 96Mi
+        cpu: 80m
+        memory: 32Mi
 
 
 grafana:
@@ -110,7 +107,7 @@ grafana:
   resources:
     requests:
       cpu: 100m
-      memory: 128Mi
+      memory: 256Mi
     limits:
       cpu: 200m
       memory: 256Mi
@@ -132,7 +129,7 @@ grafana:
     resources:
       requests:
         cpu: 20m
-        memory: 128Mi
+        memory: 256Mi
       limits:
         cpu: 40m
         memory: 256Mi
@@ -149,7 +146,7 @@ prometheus-node-exporter:
       memory: 24Mi
     limits:
       cpu: 40m
-      memory: 48Mi
+      memory: 24Mi
 
 kube-state-metrics:
   image:
@@ -161,11 +158,10 @@ kube-state-metrics:
   resources:
     requests:
       cpu: 20m
-      memory: 32Mi
+      memory: 64Mi
     limits:
       cpu: 40m
       memory: 64Mi
 
   metricLabelsAllowlist:
     - nodes=[*]
-#    - pods=[*]
