@@ -163,5 +163,6 @@ kube-state-metrics:
       cpu: 40m
       memory: 64Mi
 
-  metricLabelsAllowlist:
-    - nodes=[*]
+# Node의 라벨 정보를 메트릭에 포함
+#  metricLabelsAllowlist:
+#    - nodes=[*]
