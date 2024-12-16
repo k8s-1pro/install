@@ -39,7 +39,7 @@ prometheus:
 
     nodeSelector: {}
 
-    retention: 10d
+    retention: 1d
 
     replicas: 1
 
@@ -143,10 +143,10 @@ prometheus-node-exporter:
   resources:
     requests:
       cpu: 20m
-      memory: 24Mi
+      memory: 32Mi
     limits:
       cpu: 40m
-      memory: 24Mi
+      memory: 32Mi
 
 kube-state-metrics:
   image:
@@ -163,6 +163,6 @@ kube-state-metrics:
       cpu: 40m
       memory: 64Mi
 
-# Node의 라벨 정보를 메트릭에 포함
-#  metricLabelsAllowlist:
-#    - nodes=[*]
+  # Node의 라벨 정보를 메트릭에 포함
+  metricLabelsAllowlist:
+    - nodes=[*]
