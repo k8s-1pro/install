@@ -77,10 +77,10 @@ alertmanager:
     resources:
       requests:
         cpu: 40m
-        memory: 32Mi
+        memory: 64Mi
       limits:
         cpu: 80m
-        memory: 32Mi
+        memory: 64Mi
 
 
 grafana:
@@ -143,10 +143,10 @@ prometheus-node-exporter:
   resources:
     requests:
       cpu: 20m
-      memory: 32Mi
+      memory: 64Mi
     limits:
       cpu: 40m
-      memory: 32Mi
+      memory: 64Mi
 
 kube-state-metrics:
   image:

@@ -29,10 +29,10 @@ controller:
   resources:
     requests:
       cpu: 50m
-      memory: 100Mi
+      memory: 128Mi
     limits:
       cpu: 100m
-      memory: 100Mi
+      memory: 128Mi
 
   # Master 노드에 스케줄링 되도록 tolerations 설정
   nodeSelector:
