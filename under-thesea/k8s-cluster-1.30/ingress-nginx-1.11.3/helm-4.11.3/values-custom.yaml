@@ -42,3 +42,12 @@ controller:
     - key: "node-role.kubernetes.io/control-plane"
       operator: "Exists"
       effect: "NoSchedule"
+
+# 프로메테우스 메트릭 수집 설정
+#  metrics:
+#    enabled: true
+#    serviceMonitor:
+#      enabled: true
+#      namespace: monitoring
+#      additionalLabels:
+#        release: monitoring

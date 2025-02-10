@@ -31,6 +31,9 @@ prometheusOperator:
         memory: 48Mi
 
 prometheus:
+#  service:
+#    type: NodePort
+
   prometheusSpec:
     image:
       registry: quay.io
@@ -163,6 +166,24 @@ kube-state-metrics:
       cpu: 40m
       memory: 64Mi
 
-  # Node의 라벨 정보를 메트릭에 포함
-  metricLabelsAllowlist:
-    - nodes=[*]
+# 인증서 검증을 무시 하도록 설정
+#kubeApiServer:
+#  tlsConfig:
+#    insecureSkipVerify: true
+#kubeControllerManager:
+#  serviceMonitor:
+#    insecureSkipVerify: true
+#kubeEtcd:
+#  serviceMonitor:
+#    insecureSkipVerify: true
+#kubeScheduler:
+#  serviceMonitor:
+#    insecureSkipVerify: true
+#kubeProxy:
+#  serviceMonitor:
+#    insecureSkipVerify: true
+
+# Node의 라벨 정보를 메트릭에 포함
+#  metricLabelsAllowlist:
+#    - nodes=[*]
+#    - pods=[*]
