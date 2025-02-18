@@ -1,0 +1,38 @@
+mode: "daemonset"
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+
+config:
+  exporters:
+    otlphttp:
+      endpoint: "http://loki-gateway/otlp"
+  receivers:
+    jaeger: null
+    prometheus: null
+    zipkin: null
+  service:
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp
+      metrics: null
+      traces: null
+
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+  tag: "0.119.0"
+
+command:
+  name: "otelcol-k8s"
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+

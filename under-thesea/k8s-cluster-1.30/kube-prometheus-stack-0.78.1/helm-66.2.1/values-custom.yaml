@@ -33,6 +33,7 @@ prometheusOperator:
 prometheus:
 #  service:
 #    type: NodePort
+#    nodePort: 30090
 
   prometheusSpec:
     image:
@@ -165,6 +166,10 @@ kube-state-metrics:
     limits:
       cpu: 40m
       memory: 64Mi
+# Node의 라벨 정보를 메트릭에 포함
+#  metricLabelsAllowlist:
+#    - nodes=[*]
+#    - pods=[*]
 
 # 인증서 검증을 무시 하도록 설정
 #kubeApiServer:
@@ -182,8 +187,3 @@ kube-state-metrics:
 #kubeProxy:
 #  serviceMonitor:
 #    insecureSkipVerify: true
-
-# Node의 라벨 정보를 메트릭에 포함
-#  metricLabelsAllowlist:
-#    - nodes=[*]
-#    - pods=[*]

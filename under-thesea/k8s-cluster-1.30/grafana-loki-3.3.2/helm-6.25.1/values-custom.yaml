@@ -1,0 +1,171 @@
+loki:
+  schemaConfig:
+    configs:
+      # 하나의 데이터베이스에 두 가지 이상의 버전을 동시에 사용하기 위한 기능
+      #- from: "2018-04-15"
+      #  store: boltdb-shipper
+      #  object_store: filesystem
+      #  schema: v11
+      - from: 2024-04-01      # 내 시스템에 v13버전을 반영 시킬 날짜 - 임의 변경 O
+        store: tsdb           # Block DB 방식
+        object_store: s3      # Storage 타입
+        schema: v13           # Loki버전에 따라 schema버전 (확인 필요)
+        index:                # 로그 파일 관리 방식 (Chunk도 포함)
+          prefix: loki_index_ # 다른 Loki 인스턴스와 중복 고려
+          period: 24h         # 하루 단위로 인덱스 파일 생성
+  # 로그 데이터를 압축시 인코딩 방식
+  ingester:
+    chunk_encoding: snappy
+    # snappy (빠른 압축/해제 속도), gzip (높은 압축률), lz4(중간 속도, 중간 압축률), none
+
+  # 멤버간 Ring 구성을 위한 설정
+  # Loki 기본 권장 IP 대역(10.0.0.0/8, 100.64.0.0/10, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16)이 아닌 시 추가 설정 필요
+  extraMemberlistConfig:
+    bind_addr:
+      - ${MY_POD_IP}
+  commonConfig:
+    ring:
+      kvstore:
+        store: memberlist
+
+  # 데이터 복제 개수
+    replication_factor: 1
+
+  # 외부(OpenTelemetry, Grafana)에서 Log 보낼 때 인증 사용 안함
+  auth_enabled: false
+
+  # 데이터 보존 주기 설정
+  compactor:
+    retention_enabled: true
+    delete_request_store: s3
+  limits_config:
+    retention_period: 48h
+    volume_enabled: true
+
+  # 쿼리 병렬처리 (TSDB에서는 16이 가장 안정적)
+  querier:
+    max_concurrent: 16
+
+# 모드 설정 : SingleBinary(monolithic), SimpleScalable, Distributed(microservices)
+deploymentMode: SimpleScalable
+
+backend:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 40m
+      memory: 256Mi
+    limits:
+      cpu: 80m
+      memory: 256Mi
+  persistence:
+    volumeClaimsEnabled: false
+  extraEnv:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+  extraArgs:
+    - -config.expand-env=true
+
+read:
+  replicas: 1
+  resources:
+    requests:
+      cpu: 40m
+      memory: 128Mi
+    limits:
+      cpu: 80m
+      memory: 128Mi
+  persistence:
+    volumeClaimsEnabled: false
+  extraEnv:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+  extraArgs:
+    - -config.expand-env=true
+
+write:
+  replicas: 2
+  resources:
+    requests:
+      cpu: 40m
+      memory: 256Mi
+    limits:
+      cpu: 80m
+      memory: 256Mi
+  persistence:
+    volumeClaimsEnabled: true
+    size: 1Gi
+    selector:
+      matchLabels:
+        app.kubernetes.io/name: loki-write-volume
+  extraEnv:
+    - name: MY_POD_IP
+      valueFrom:
+        fieldRef:
+          fieldPath: status.podIP
+  extraArgs:
+    - -config.expand-env=true
+
+# Enable minio for storage
+minio:
+  enabled: true
+  mode: standalone
+  replicas: 1
+  rootUser: minioadmin
+  rootPassword: minioadmin
+  persistence:
+    enabled: true
+    size: 5Gi
+    existingClaim: "minio-pvc"
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 256Mi
+  consoleService:
+    type: NodePort
+    nodePort: 30009
+
+gateway:
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 32Mi
+
+chunksCache:
+  enabled: false
+resultsCache:
+  enabled: false
+test:
+  enabled: false
+lokiCanary:
+  enabled: false
+singleBinary:
+  replicas: 0
+ingester:
+  replicas: 0
+querier:
+  replicas: 0
+queryFrontend:
+  replicas: 0
+queryScheduler:
+  replicas: 0
+distributor:
+  replicas: 0
+compactor:
+  replicas: 0
+indexGateway:
+  replicas: 0
+bloomCompactor:
+  replicas: 0
+bloomGateway:
+  replicas: 0
