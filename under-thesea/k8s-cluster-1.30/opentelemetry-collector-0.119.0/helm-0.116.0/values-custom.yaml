@@ -1,3 +1,11 @@
+# https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-collector/0.116.0
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+  tag: "0.119.0"
+
+command:
+  name: "otelcol-k8s"
+
 mode: "daemonset"
 
 presets:
@@ -20,13 +28,6 @@ config:
           - otlphttp
       metrics: null
       traces: null
-
-image:
-  repository: "otel/opentelemetry-collector-k8s"
-  tag: "0.119.0"
-
-command:
-  name: "otelcol-k8s"
 
 resources:
   requests:

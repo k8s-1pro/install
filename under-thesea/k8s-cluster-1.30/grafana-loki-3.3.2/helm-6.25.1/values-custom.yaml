@@ -1,25 +1,36 @@
 loki:
+  # https://grafana.com/docs/loki/v3.3.x/operations/storage/schema/#storage-schema
+  # 사용할 스토리지 선택
   schemaConfig:
     configs:
       # 하나의 데이터베이스에 두 가지 이상의 버전을 동시에 사용하기 위한 기능
-      #- from: "2018-04-15"
-      #  store: boltdb-shipper
+      #- from: 2019-07-01
+      #  store: boltdb
       #  object_store: filesystem
       #  schema: v11
+      #index:
+      #  prefix: index_
+      #  period: 24h
       - from: 2024-04-01      # 내 시스템에 v13버전을 반영 시킬 날짜 - 임의 변경 O
+        # https://grafana.com/docs/loki/v3.3.x/configure/storage/#on-premise-deployment-minio-single-store
         store: tsdb           # Block DB 방식
         object_store: s3      # Storage 타입
-        schema: v13           # Loki버전에 따라 schema버전 (확인 필요)
+        schema: v13           # Loki 버전에 따라 달라짐 - v1~v5: bigtable, v6: boltdb, v7: boltdb-shipper, v8~11: chunks, v13: tsdb
         index:                # 로그 파일 관리 방식 (Chunk도 포함)
-          prefix: loki_index_ # 다른 Loki 인스턴스와 중복 고려
+          prefix: index_      # 다른 Loki 인스턴스와 중복 고려
           period: 24h         # 하루 단위로 인덱스 파일 생성
-  # 로그 데이터를 압축시 인코딩 방식
+        #chunk:
+        #  prefix: index_
+        #  period: 24h
+
+  # 스토리지에 로그 데이터를 저장할 때 어떤 인코딩 방식으로 압축할지
+  # https://grafana.com/docs/loki/v3.3.x/configure/#ingester
   ingester:
     chunk_encoding: snappy
     # snappy (빠른 압축/해제 속도), gzip (높은 압축률), lz4(중간 속도, 중간 압축률), none
 
-  # 멤버간 Ring 구성을 위한 설정
-  # Loki 기본 권장 IP 대역(10.0.0.0/8, 100.64.0.0/10, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16)이 아닌 시 추가 설정 필요
+  # 컴포넌트간 Ring 구성을 위한 설정
+  # Loki 기본 권장 Private IP 대역(10.0.0.0/8, 100.64.0.0/10, 172.16.0.0/12, 192.168.0.0/16, 198.19.0.0/16)일 경우에는 설정할 필요 없음
   extraMemberlistConfig:
     bind_addr:
       - ${MY_POD_IP}
@@ -29,26 +40,33 @@ loki:
         store: memberlist
 
   # 데이터 복제 개수
+  # https://grafana.com/docs/loki/v3.3.x/configure/#ingester
     replication_factor: 1
 
-  # 외부(OpenTelemetry, Grafana)에서 Log 보낼 때 인증 사용 안함
+  # 테넌트(조직)별 로그 데이터 격리 기능
+  # https://grafana.com/docs/loki/v3.3.x/operations/authentication/#manage-authentication
+  # https://grafana.com/docs/loki/v3.3.x/configure/#supported-contents-and-default-values-of-lokiyaml
   auth_enabled: false
+  # true :  Request Header 세팅 필요 "X-Scope-OrgID: my-org"
+  # false : fake로 세팅됨
 
   # 데이터 보존 주기 설정
+  # https://grafana.com/docs/loki/v3.3.x/operations/storage/retention/
   compactor:
     retention_enabled: true
     delete_request_store: s3
   limits_config:
     retention_period: 48h
-    volume_enabled: true
 
   # 쿼리 병렬처리 (TSDB에서는 16이 가장 안정적)
+  # https://grafana.com/docs/loki/latest/operations/storage/tsdb/
   querier:
-    max_concurrent: 16
+    max_concurrent: 16 # default 4
 
 # 모드 설정 : SingleBinary(monolithic), SimpleScalable, Distributed(microservices)
 deploymentMode: SimpleScalable
 
+# Backend 컴포넌트 - Query Scheduler, Index Gateway, Compactor, Ruler
 backend:
   replicas: 1
   resources:
@@ -60,6 +78,7 @@ backend:
       memory: 256Mi
   persistence:
     volumeClaimsEnabled: false
+  # 컴포넌트간 Ring 구성을 위한 설정
   extraEnv:
     - name: MY_POD_IP
       valueFrom:
@@ -68,6 +87,7 @@ backend:
   extraArgs:
     - -config.expand-env=true
 
+# Read 컴포넌트 - Query frontend, Querier
 read:
   replicas: 1
   resources:
@@ -79,6 +99,7 @@ read:
       memory: 128Mi
   persistence:
     volumeClaimsEnabled: false
+  # 컴포넌트간 Ring 구성을 위한 설정
   extraEnv:
     - name: MY_POD_IP
       valueFrom:
@@ -87,6 +108,7 @@ read:
   extraArgs:
     - -config.expand-env=true
 
+# Write 컴포넌트 - Ingester, Distributor
 write:
   replicas: 2
   resources:
@@ -102,6 +124,7 @@ write:
     selector:
       matchLabels:
         app.kubernetes.io/name: loki-write-volume
+  # 컴포넌트간 Ring 구성을 위한 설정
   extraEnv:
     - name: MY_POD_IP
       valueFrom:
@@ -110,11 +133,14 @@ write:
   extraArgs:
     - -config.expand-env=true
 
-# Enable minio for storage
+# MinIO - Object Storage 저장용도 - TSDB
 minio:
   enabled: true
   mode: standalone
   replicas: 1
+  consoleService:
+    type: NodePort
+    nodePort: 30009
   rootUser: minioadmin
   rootPassword: minioadmin
   persistence:
@@ -128,10 +154,8 @@ minio:
     limits:
       cpu: 400m
       memory: 256Mi
-  consoleService:
-    type: NodePort
-    nodePort: 30009
 
+# Gateway - Loki 내부용으로만 사용하는 Nginx
 gateway:
   resources:
     requests:
@@ -141,16 +165,25 @@ gateway:
       cpu: 50m
       memory: 32Mi
 
+# 캐시 기능 - 성능 개선에 필수
+# https://grafana.com/docs/loki/v3.3.x/operations/caching/
 chunksCache:
   enabled: false
 resultsCache:
   enabled: false
+
+# 로키 테스트 및 헬스체크 기능
+# https://grafana.com/docs/loki/v3.3.x/operations/loki-canary/
 test:
   enabled: false
 lokiCanary:
   enabled: false
+
+# 모놀리식 배포에 사용
 singleBinary:
   replicas: 0
+
+# 마이크로서비스 배포에 사용
 ingester:
   replicas: 0
 querier:
