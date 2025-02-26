@@ -39,13 +39,14 @@ loki:
       kvstore:
         store: memberlist
 
-  # 데이터 복제 개수
+  # 데이터 복제 개수 ( 데이터 이중화 시 Pod 4, replication_factor: 3을 권장 )
   # https://grafana.com/docs/loki/v3.3.x/configure/#ingester
+  # https://grafana.com/docs/loki/v3.3.x/get-started/components/
     replication_factor: 1
 
   # 테넌트(조직)별 로그 데이터 격리 기능
   # https://grafana.com/docs/loki/v3.3.x/operations/authentication/#manage-authentication
-  # https://grafana.com/docs/loki/v3.3.x/configure/#supported-contents-and-default-values-of-lokiyaml
+  # https://grafana.com/docs/loki/v3.3.x/operations/multi-tenancy/
   auth_enabled: false
   # true :  Request Header 세팅 필요 "X-Scope-OrgID: my-org"
   # false : fake로 세팅됨
