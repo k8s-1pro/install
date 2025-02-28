@@ -179,6 +179,10 @@ receivers:
       - type: container
         id: container-parser
         max_log_size: {{ $.Values.presets.logsCollection.maxRecombineLogSize }}
+      - type: regex_parser
+        regex: 'trace_type=(?P<trace_type>\S+) trace_ip=(?P<trace_ip>\S+) user_id=(?P<user_id>\S+) message=(?P<message>.*)'
+        parse_from: body
+        if: 'body matches ".*trace_type=.*"'
 {{- end }}
 
 {{- define "opentelemetry-collector.applyKubernetesAttributesConfig" -}}
