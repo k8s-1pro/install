@@ -12,8 +12,6 @@ presets:
   logsCollection:
     enabled: true
     includeCollectorLogs: true
-  kubernetesEvents:
-    enabled: true
 #  kubernetesAttributes:
 #    enabled: true
 #    extractAllPodLabels: true
@@ -21,15 +19,19 @@ presets:
 
 config:
   processors:
+    resource:
+      attributes:
+        - key: environment
+          value: "production"
+          action: upsert
     attributes:
       actions:
-        - key: environment
-          value: production
-          action: insert
-    transform/logs:
+        - key: message
+          action: delete
+    transform:
       error_mode: ignore
       log_statements:
-        - replace_pattern(log.body, "user_id=[^ ]+", "user_id=***")
+        - replace_pattern(log.body, "(\\d{6})-\\d{7}", "$1-*******")
   exporters:
     otlphttp:
       endpoint: "http://loki-gateway/otlp"
@@ -49,7 +51,6 @@ config:
           - transform/logs
       metrics: null
       traces: null
-
 resources:
   requests:
     cpu: 100m
