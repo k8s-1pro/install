@@ -18,16 +18,16 @@ presets:
 #    extractAllPodAnnotations: true
 
 config:
+  extensions:
+    zpages:
+      - endpoint: localhost:55679
+
   processors:
     resource:
       attributes:
         - key: environment
           value: "production"
           action: upsert
-    attributes:
-      actions:
-        - key: message
-          action: delete
     transform:
       error_mode: ignore
       log_statements:
@@ -40,6 +40,9 @@ config:
     prometheus: null
     zipkin: null
   service:
+    extensions:
+      - health_check
+      - zpages
     pipelines:
       logs:
         exporters:
@@ -49,8 +52,29 @@ config:
           - batch
           - attributes
           - transform/logs
+          - resource
       metrics: null
       traces: null
+
+ports:
+  zpages:
+    enabled: true
+    containerPort: 55679
+    protocol: TCP
+    hostPort: 55679
+  otlp:
+    enabled: false
+  otlp-http:
+    enabled: false
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+
 resources:
   requests:
     cpu: 100m
