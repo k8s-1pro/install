@@ -38,6 +38,7 @@ echo '======== [4-1] 패키지 업데이트 ========'
 echo '======== [4-2] 타임존 설정 및 동기화========'
 timedatectl set-timezone Asia/Seoul
 timedatectl set-ntp true
+chronyc makestep
 
 echo '======== [4-3] Disk 확장 / Bug: soft lockup 설정 추가========'
 # https://cafe.naver.com/kubeops/25
