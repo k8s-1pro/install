@@ -1,0 +1,43 @@
+_internal_defaults_do_not_set:
+
+  image: pilot
+
+  resources:
+    requests:
+      cpu: 200m
+      memory: 256Mi
+    limits:
+      cpu: 400m
+      memory: 256Mi
+
+  global:
+    defaultResources:
+      requests:
+        cpu: 10m
+      #   memory: 128Mi
+      # limits:
+      #   cpu: 100m
+      #   memory: 128Mi
+
+    hub: docker.io/istio
+    tag: 1.25.1
+
+    proxy:
+      image: proxyv2
+
+      resources:
+        requests:
+          cpu: 10m
+          memory: 48Mi
+        limits:
+          cpu: 20m
+          memory: 48Mi
+
+    waypoint:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 128Mi
+        limits:
+          cpu: 200m
+          memory: 128Mi
