@@ -1,0 +1,18 @@
+auth:
+  strategy: "anonymous"
+
+deployment:
+  image_name: quay.io/kiali/kiali
+  image_version: v2.7.1
+  replicas: 1
+  resources:
+    requests:
+      cpu: "10m"
+      memory: "64Mi"
+    limits:
+      cpu: "20m"
+      memory: "64Mi"
+  service_type: NodePort
+
+server:
+  node_port: 30010
