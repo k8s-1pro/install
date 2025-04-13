@@ -17,17 +17,13 @@ config:
   exporters:
     otlphttp:
       endpoint: https://loki-gateway/otlp
-  receivers:
-    jaeger: null
-    prometheus: null
-    zipkin: null
   service:
     pipelines:
-      traces:
-        receivers:
+      logs:
+        exporters:
           - otlphttp
       metrics: null
-      logs: null
+      traces: null
 
 resources:
   requests:
