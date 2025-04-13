@@ -16,7 +16,7 @@ presets:
 config:
   exporters:
     otlphttp:
-      endpoint: https://loki-gateway/otlp
+      endpoint: http://loki-gateway/otlp
   service:
     pipelines:
       logs:
