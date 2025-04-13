@@ -58,16 +58,7 @@ loki:
     delete_request_store: s3
   limits_config:
     retention_period: 48h
-    otlp_config:
-      resource_attributes:
-        attributes_config:
-          - action: index_label
-            regex: environment
 
-  distributor:
-    otlp_config:
-      default_resource_attributes_as_index_labels:
-        - environment
 
   # 쿼리 병렬처리 (TSDB에서는 16이 가장 안정적)
   # https://grafana.com/docs/loki/latest/operations/storage/tsdb/
