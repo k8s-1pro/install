@@ -8,7 +8,18 @@ metrics-server:
       operator: "Exists"
       effect: "NoSchedule"
 
+
+web:
+  role: web
+  containers:
+    ports:
+      - name: web
+        containerPort: 8000
+        protocol: TCP
+
+
 kong:
+  enabled: true
   proxy:
     type: NodePort
     tls:

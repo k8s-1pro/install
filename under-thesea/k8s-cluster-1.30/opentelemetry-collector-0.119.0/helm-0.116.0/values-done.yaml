@@ -1,0 +1,85 @@
+# https://artifacthub.io/packages/helm/opentelemetry-helm/opentelemetry-collector/0.116.0
+image:
+  repository: "otel/opentelemetry-collector-k8s"
+  tag: "0.119.0"
+
+command:
+  name: "otelcol-k8s"
+
+mode: "daemonset"
+
+presets:
+  logsCollection:
+    enabled: true
+    includeCollectorLogs: true
+#  kubernetesAttributes:
+#    enabled: true
+#    extractAllPodLabels: true
+#    extractAllPodAnnotations: true
+
+config:
+  extensions:
+    zpages:
+      - endpoint: localhost:55679
+
+  processors:
+    resource:
+      attributes:
+        - key: environment
+          value: "production"
+          action: upsert
+    transform:
+      error_mode: ignore
+      log_statements:
+        - replace_pattern(log.body, "(\\d{6})-\\d{7}", "$1-*******")
+  exporters:
+    otlphttp:
+      endpoint: "http://loki-gateway/otlp"
+  receivers:
+    jaeger: null
+    prometheus: null
+    zipkin: null
+  service:
+    extensions:
+      - health_check
+      - zpages
+    pipelines:
+      logs:
+        exporters:
+          - otlphttp
+        processors:
+          - memory_limiter
+          - batch
+          - attributes
+          - transform/logs
+          - resource
+      metrics: null
+      traces: null
+
+ports:
+  zpages:
+    enabled: true
+    containerPort: 55679
+    protocol: TCP
+    hostPort: 55679
+  otlp:
+    enabled: false
+  otlp-http:
+    enabled: false
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
+

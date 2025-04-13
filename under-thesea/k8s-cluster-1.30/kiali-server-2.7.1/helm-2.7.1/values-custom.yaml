@@ -7,11 +7,11 @@ deployment:
   replicas: 1
   resources:
     requests:
-      cpu: "10m"
-      memory: "64Mi"
+      cpu: "40m"
+      memory: "128Mi"
     limits:
-      cpu: "20m"
-      memory: "64Mi"
+      cpu: "80m"
+      memory: "128Mi"
   service_type: NodePort
 
 server:
