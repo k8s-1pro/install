@@ -12,29 +12,28 @@ presets:
   logsCollection:
     enabled: true
     includeCollectorLogs: true
-#  kubernetesAttributes:
-#    enabled: true
-#    extractAllPodLabels: true
-#    extractAllPodAnnotations: true
+  kubernetesAttributes:
+    enabled: true
+    extractAllPodLabels: true
+
 
 config:
-  extensions:
-    zpages:
-      - endpoint: localhost:55679
-
   processors:
     resource:
       attributes:
         - key: environment
           value: "production"
-          action: upsert
+          action: insert
     transform:
       error_mode: ignore
       log_statements:
         - replace_pattern(log.body, "(\\d{6})-\\d{7}", "$1-*******")
   exporters:
     otlphttp:
-      endpoint: "http://loki-gateway/otlp"
+      endpoint: http://loki-gateway/otlp
+  extensions:
+    zpages:
+      endpoint: 0.0.0.0:55679
   receivers:
     jaeger: null
     prometheus: null
@@ -48,13 +47,20 @@ config:
         exporters:
           - otlphttp
         processors:
-          - memory_limiter
-          - batch
-          - attributes
-          - transform/logs
           - resource
+          - batch
+          - memory_limiter
+          - transform
       metrics: null
       traces: null
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 200m
+    memory: 128Mi
 
 ports:
   zpages:
@@ -74,12 +80,3 @@ ports:
     enabled: false
   zipkin:
     enabled: false
-
-resources:
-  requests:
-    cpu: 100m
-    memory: 128Mi
-  limits:
-    cpu: 200m
-    memory: 128Mi
-
