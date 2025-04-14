@@ -1,41 +1,40 @@
 
 Vagrant.configure("2") do |config|
-    
+
   config.vm.box = "rockylinux/8"
   # Disk 확장설정 추가
-  config.disksize.size = "50GB"
+  config.disksize.size = "30GB"
 
   # https://cafe.naver.com/kubeops/26
   config.vbguest.auto_update = false
   config.vm.synced_folder "./", "/vagrant", disabled: true
+  config.vm.provision :shell, privileged: true, inline: $install_common_tools
 
-  config.vm.provision :shell, privileged: true, inline: $install_default
-  config.vm.define "master-node" do |master|
+  config.vm.define "k8s-master" do |master|
     master.vm.hostname = "k8s-master"
-    master.vm.network "private_network", ip: "192.168.56.30"
-	master.vm.provider :virtualbox do |vb|
-      vb.memory = 6144
+    master.vm.network "private_network", ip: "192.168.56.50"
+    master.vm.provider :virtualbox do |vb|
+      vb.memory = 4096
       vb.cpus = 4
-	  vb.customize ["modifyvm", :id, "--firmware", "efi"]
-	  vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+      vb.customize ["modifyvm", :id, "--firmware", "efi"]
+      vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
 	end
-    master.vm.provision :shell, privileged: true, inline: $install_master
+    master.vm.provision :shell, privileged: true, inline: $provision_master_node
   end
-
 end
 
-$install_default = <<-SHELL
+$install_common_tools = <<-SHELL
 
 echo '======== [4] Rocky Linux 기본 설정 ========'
 echo '======== [4-1] 패키지 업데이트 ========'
-# 강의와 동일한 실습 환경을 유지하기 위해 Linux Update 주석 처리
+# 실습 자료실과 동일한 실습 환경을 유지하기 위해 Linux Update 주석 처리
 # yum -y update
 
 # 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
 # echo "root:새로운비밀번호" | chpasswd
 
 
-echo '======== [4-2] 타임존 설정 및 동기화========'
+echo '======== [4-2] 타임존 설정 ========'
 timedatectl set-timezone Asia/Seoul
 timedatectl set-ntp true
 chronyc makestep
@@ -49,9 +48,9 @@ xfs_growfs /dev/sda4
 echo '======== [4-4] [WARNING FileExisting-tc]: tc not found in system path 로그 관련 업데이트 ========'
 yum install -y yum-utils iproute-tc
 
-echo '======= [4-4] hosts 설정 =========='
+echo '======== [4-5] Hosts 등록 ========'
 cat << EOF >> /etc/hosts
-192.168.56.30 k8s-master
+192.168.56.50 k8s-master
 EOF
 
 echo '======== [5] kubeadm 설치 전 사전작업 ========'
@@ -99,7 +98,6 @@ sed -i 's/ SystemdCgroup = false/ SystemdCgroup = true/' /etc/containerd/config.
 systemctl restart containerd
 
 
-
 echo '======== [7] kubeadm 설치 ========'
 echo '======== [7] repo 설정 ========'
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
@@ -111,7 +109,6 @@ gpgcheck=1
 gpgkey=https://pkgs.k8s.io/core:/stable:/v1.27/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
-
 
 echo '======== [7] SELinux 설정 ========'
 setenforce 0
@@ -125,11 +122,11 @@ SHELL
 
 
 
-$install_master = <<-SHELL
+$provision_master_node = <<-SHELL
 
 echo '======== [8] kubeadm으로 클러스터 생성  ========'
 echo '======== [8-1] 클러스터 초기화 (Pod Network 세팅) ========'
-kubeadm init --pod-network-cidr=20.96.0.0/16 --apiserver-advertise-address 192.168.56.30
+kubeadm init --pod-network-cidr=20.96.0.0/16 --apiserver-advertise-address 192.168.56.50
 
 echo '======== [8-2] kubectl 사용 설정 ========'
 mkdir -p $HOME/.kube
@@ -140,9 +137,6 @@ echo '======== [8-3] Pod Network 설치 (calico) ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/calico-3.26.4/calico.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/calico-3.26.4/calico-custom.yaml
 
-echo '======== [8-4] Master에 Pod를 생성 할수 있도록 설정 ========'
-kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane-
-
 
 echo '======== [9] 쿠버네티스 편의기능 설치 ========'
 echo '======== [9-1] kubectl 자동완성 기능 ========'
@@ -150,9 +144,6 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
-echo '======== [9-2] Dashboard 설치 ========'
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/dashboard-2.7.0/dashboard.yaml
 
-echo '======== [9-3] Metrics Server 설치 ========'
-kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/ground/k8s-1.27/metrics-server-0.6.3/metrics-server.yaml
+
 SHELL
