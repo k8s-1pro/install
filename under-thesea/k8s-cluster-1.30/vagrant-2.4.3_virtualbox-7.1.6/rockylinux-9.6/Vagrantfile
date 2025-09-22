@@ -1,0 +1,30 @@
+NodeCnt = 2
+
+Vagrant.configure("2") do |config|
+    
+  config.vm.box = "rockylinux/9.6"
+
+  config.vbguest.auto_update = false
+  config.vm.synced_folder "./", "/vagrant", disabled: true
+
+  config.vm.define "test-node" do |test|
+    test.vm.hostname = "k8s-test"
+    test.vm.network "private_network", ip: "192.168.56.50"
+    test.vm.provider :virtualbox do |vb|
+      vb.memory = 2048
+      vb.cpus = 2
+      vb.customize ["modifyvm", :id, "--firmware", "efi"]
+      vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+	end
+    test.vm.provision :shell, privileged: true, inline: $install_default
+  end
+
+end
+
+$install_default = <<-SHELL
+
+echo '======== root 로그인 허용 체크 ========'
+sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl restart sshd
+
+SHELL
