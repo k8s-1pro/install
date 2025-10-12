@@ -129,7 +129,7 @@ $install_master = <<-SHELL
 
 echo '======== [8] kubeadm으로 클러스터 생성  ========'
 echo '======== [8-1] 클러스터 초기화 (Pod Network 세팅) ========'
-kubeadm init --pod-network-cidr=20.96.0.0/16 --apiserver-advertise-address 192.168.56.30
+kubeadm init --pod-network-cidr=20.96.0.0/12 --apiserver-advertise-address 192.168.56.30
 
 echo '======== [8-2] kubectl 사용 설정 ========'
 mkdir -p $HOME/.kube
