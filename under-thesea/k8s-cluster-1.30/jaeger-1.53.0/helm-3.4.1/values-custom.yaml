@@ -1,0 +1,31 @@
+query:
+  enabled: true
+  service:
+    type: NodePort
+    nodePort: 30013
+
+provisionDataStore:
+  cassandra: true
+
+storage:
+  type: cassandra
+
+cassandra:
+  config:
+    cluster_name: jaeger
+    cluster_size: 1
+    seed_size: 1
+    dc_name: dc1
+    rack_name: rack1
+    endpoint_snitch: GossipingPropertyFileSnitch
+    max_heap_size: 256M
+    heap_new_size: 128M
+
+collector:
+  enabled: true
+
+ingester:
+  enabled: false
+
+agent:
+  enabled: false
