@@ -21,8 +21,22 @@ cassandra:
     max_heap_size: 256M
     heap_new_size: 128M
 
+schema:
+  image:
+    registry: ""
+    repository: jaegertracing/jaeger-cassandra-schema
+    tag: "2.4.0"
+
 collector:
   enabled: true
+  service:
+    otlp:
+      grpc:
+        name: otlp-grpc
+        port: 4317
+      http:
+        name: otlp-http
+        port: 4318
 
 ingester:
   enabled: false
