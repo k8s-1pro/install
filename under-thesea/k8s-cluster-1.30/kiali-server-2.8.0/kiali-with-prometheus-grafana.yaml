@@ -100,7 +100,7 @@ data:
       grafana:
         enabled: true
         internal_url: 'http://monitoring-grafana.monitoring/'    
-        external_url: 'https://grafana'
+        external_url: 'https://grafana/'
         auth:
           type: "basic"
           password: "admin"
@@ -108,6 +108,9 @@ data:
         dashboards:
         - name: "Istio Service Dashboard"
         - name: "Istio Workload Dashboard"
+        - name: "Istio Mesh Dashboard"
+        - name: "Istio Control Plane Dashboard"
+        - name: "Istio Performance Dashboard"
       custom_dashboards:
         enabled: true
       istio:
