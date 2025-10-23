@@ -100,11 +100,13 @@ data:
         url: "http://monitoring-kube-prometheus-prometheus.monitoring:9090/"
       istio:
         root_namespace: istio-system
+      custom_dashboards:
+        enabled: true
       tracing:
         enabled: true
         internal_url: "http://jaeger-inmemory-instance-collector.tracing:16686"
         use_grpc: false
-        external_url: "http://jaeger:8080"
+        external_url: "https://jaeger:8443"
     identity:
       cert_file: ""
       private_key_file: ""

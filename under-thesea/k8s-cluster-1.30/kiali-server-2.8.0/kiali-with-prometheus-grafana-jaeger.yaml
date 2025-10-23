@@ -95,29 +95,34 @@ data:
       version_label: v2.8.0
       view_only_mode: false
     external_services:
-      prometheus:
-        url: "http://monitoring-kube-prometheus-prometheus.monitoring:9090/"
       grafana:
         enabled: true
-        internal_url: 'http://monitoring-grafana.monitoring/'    
-        external_url: 'http://grafana:8080'
-        datasource_uid: ""
+        external_url: "https://grafana:8443"
+        internal_url: "http://monitoring-grafana.monitoring"    
         auth:
           type: "basic"
-          password: "admin"
           username: "admin"
+          password: "admin"
         dashboards:
         - name: "Istio Service Dashboard"
+          variables:
+            namespace: var-namespace
+            service: var-service
         - name: "Istio Workload Dashboard"
-      custom_dashboards:
-        enabled: true
+          variables:
+            namespace: var-namespace
+            workload: var-workload
+      prometheus:
+        url: "http://monitoring-kube-prometheus-prometheus.monitoring:9090"
       istio:
         root_namespace: istio-system
+      custom_dashboards:
+        enabled: true
       tracing:
         enabled: true
         internal_url: "http://jaeger-inmemory-instance-collector.tracing:16686"
         use_grpc: false
-        external_url: "http://jaeger:8080"
+        external_url: "https://jaeger:8443"
     identity:
       cert_file: ""
       private_key_file: ""
