@@ -100,7 +100,8 @@ data:
       grafana:
         enabled: true
         internal_url: 'http://monitoring-grafana.monitoring/'    
-        external_url: 'https://grafana'
+        external_url: 'http://grafana:8080'
+        datasource_uid: ""
         auth:
           type: "basic"
           password: "admin"
@@ -116,7 +117,7 @@ data:
         enabled: true
         internal_url: "http://jaeger-inmemory-instance-collector.tracing:16686"
         use_grpc: false
-        external_url: "https://jaeger"
+        external_url: "http://jaeger:8080"
     identity:
       cert_file: ""
       private_key_file: ""

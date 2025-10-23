@@ -104,7 +104,7 @@ data:
         enabled: true
         internal_url: "http://jaeger-inmemory-instance-collector.tracing:16686"
         use_grpc: false
-        external_url: "https://jaeger"
+        external_url: "http://jaeger:8080"
     identity:
       cert_file: ""
       private_key_file: ""
