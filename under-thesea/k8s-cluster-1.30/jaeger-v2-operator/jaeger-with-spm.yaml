@@ -1,4 +1,3 @@
-kubectl apply -f - <<EOF
 apiVersion: opentelemetry.io/v1beta1
 kind: OpenTelemetryCollector
 metadata:
@@ -71,4 +70,3 @@ spec:
         endpoint: "0.0.0.0:8889"
     connectors:
       spanmetrics: {}
-  EOF
