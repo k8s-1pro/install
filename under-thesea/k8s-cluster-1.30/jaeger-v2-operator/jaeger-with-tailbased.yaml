@@ -37,4 +37,4 @@ spec:
         trace_storage: memstore
     processors:
       tail_sampling:
-        policies: [{ name: policy-1, type: status_code, status_code: {status_codes: [ERROR, UNSET]}}]
+        policies: [{ name: policy-1, type: latency, latency: {upper_threshold_ms: 15}}]
