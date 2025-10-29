@@ -1,0 +1,74 @@
+kubectl apply -f - <<EOF
+apiVersion: opentelemetry.io/v1beta1
+kind: OpenTelemetryCollector
+metadata:
+  name: jaeger-inmemory-instance
+  namespace: tracing
+spec:
+  image: jaegertracing/jaeger:2.11.0
+  ports:
+    - name: jaeger
+      port: 16686
+    - name: prometheus
+      port: 8889
+  volumeMounts:
+    - name: jaeger-ui-config
+      mountPath: /etc/jaeger/
+  volumes:
+    - name: jaeger-ui-config
+      configMap:
+        name: jaeger-ui-config
+  config:
+    service:
+      extensions: [jaeger_storage, jaeger_query]
+      pipelines:
+        traces:
+          receivers: [otlp]
+          exporters: [jaeger_storage_exporter, spanmetrics]
+        metrics/spanmetrics:
+          receivers: [spanmetrics]
+          exporters: [prometheus]
+    telemetry:
+      resource:
+        service.name: jaeger
+      metrics:
+        level: detailed
+        readers:
+        - pull:
+            exporter:
+              prometheus:
+                host: 0.0.0.0
+                port: 8888
+    extensions:
+      jaeger_query:
+        storage:
+          traces: memstore
+          metrics: prom_metrics_store
+        ui:
+          config_file: /etc/jaeger/ui-config.json
+      jaeger_storage:
+        backends:
+          memstore:
+            memory:
+              max_traces: 100000
+        metric_backends:
+          prom_metrics_store:
+            prometheus:
+              endpoint: http://monitoring-kube-prometheus-prometheus.monitoring:9090
+              normalize_calls: true
+              normalize_duration: true
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+    exporters:
+      jaeger_storage_exporter:
+        trace_storage: memstore
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+    connectors:
+      spanmetrics: {}
+  EOF

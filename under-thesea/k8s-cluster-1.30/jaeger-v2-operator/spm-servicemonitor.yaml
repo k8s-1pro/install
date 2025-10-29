@@ -1,0 +1,21 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: jaeger-spanmetrics
+  namespace: monitoring
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: jaeger-inmemory-instance-collector
+      app.kubernetes.io/component: opentelemetry-collector
+  namespaceSelector:
+    matchNames:
+      - tracing
+  endpoints:
+    - port: prometheus
+      scheme: http
+      interval: 15s
+      honorLabels: true
+      path: /metrics
