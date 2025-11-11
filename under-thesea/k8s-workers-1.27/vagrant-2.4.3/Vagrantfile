@@ -40,7 +40,7 @@ timedatectl set-timezone Asia/Seoul
 timedatectl set-ntp true
 chronyc makestep
 
-echo '======== [4-3] Disk 확장 / Bug: soft lockup 설정 추가========'
+echo '======== [4-3] Disk 확장 ========'
 # https://cafe.naver.com/kubeops/25
 yum install -y cloud-utils-growpart
 growpart /dev/sda 4
