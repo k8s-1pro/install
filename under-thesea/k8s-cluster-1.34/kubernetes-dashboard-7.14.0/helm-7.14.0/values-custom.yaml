@@ -1,0 +1,70 @@
+app:
+  scheduling:
+    nodeSelector:
+      kubernetes.io/hostname: k8s-master
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+auth:
+  containers:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 50Mi
+      limits:
+        cpu: 100m
+        memory: 200Mi
+
+api:
+  containers:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 150m
+        memory: 200Mi
+
+web:
+  containers:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 250m
+        memory: 200Mi
+
+metricsScraper:
+  containers:
+    resources:
+      requests:
+        cpu: 50m
+        memory: 100Mi
+      limits:
+        cpu: 250m
+        memory: 200Mi
+
+metrics-server:
+  enabled: true
+  nodeSelector:
+    kubernetes.io/hostname: k8s-master
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+kong:
+  enabled: true
+  proxy:
+    type: NodePort
+    tls:
+      nodePort: 30000
+  nodeSelector:
+    kubernetes.io/hostname: k8s-master
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"

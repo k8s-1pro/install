@@ -1,0 +1,145 @@
+NodeCnt = 2
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "rockylinux/9.6"
+  # Disk 확장설정 추가
+  config.disksize.size = "30GB"
+
+  config.vbguest.auto_update = false
+  config.vm.synced_folder "./", "/vagrant", disabled: true
+
+  config.vm.provision :shell, privileged: true, inline: $install_default
+
+  config.vm.define "master-node" do |master|
+    master.vm.hostname = "k8s-master"
+    master.vm.network "private_network", ip: "192.168.56.30"
+    master.vm.provider :virtualbox do |vb|
+      vb.memory = 4096
+      vb.cpus = 4
+      vb.customize ["modifyvm", :id, "--firmware", "efi"]
+      vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+	end
+    master.vm.provision :shell, privileged: true, inline: $install_master
+  end
+
+
+end
+
+$install_default = <<-SHELL
+
+echo '======== [4] Rocky Linux 기본 설정 ========'
+echo '======== [4-1] 패키지 업데이트 ========'
+yum -y update --releasever=9.6
+
+
+echo '======== root 로그인 허용 체크 ========'
+sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+systemctl restart sshd
+
+# 초기 root 비밀번호 변경을 원하시면 아래 주석을 풀고 [새로운비밀번호]에 비번을 입력해주세요
+# echo "root:새로운비밀번호" | chpasswd
+
+echo '======== [4-2] 타임존 설정 및 동기화========'
+timedatectl set-timezone Asia/Seoul
+timedatectl set-ntp true
+chronyc makestep
+
+echo '======== [4-3] Disk 확장 ========'
+# https://cafe.naver.com/kubeops/25
+yum install -y cloud-utils-growpart
+growpart /dev/sda 4
+xfs_growfs /dev/sda4
+
+echo '======== [4-4] [WARNING FileExisting-tc]: tc not found in system path 로그 관련 업데이트 ========'
+yum install -y yum-utils iproute-tc
+
+echo '======= [4-4] hosts 설정 =========='
+cat << EOF >> /etc/hosts
+192.168.56.30 k8s-master
+192.168.56.31 k8s-worker1
+192.168.56.32 k8s-worker2
+EOF
+
+echo '======== [5] kubeadm 설치 전 사전작업 ========'
+echo '======== [5] 방화벽 해제 ========'
+systemctl stop firewalld && systemctl disable firewalld
+
+echo '======== [5] Swap 비활성화 ========'
+swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab
+
+
+echo '======== [6] 컨테이너 런타임 설치 ========'
+echo '======== [6-1] 컨테이너 런타임 설치 전 사전작업 ========'
+echo '======== [6-1] iptable 세팅 ========'
+cat <<EOF |tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+modprobe overlay
+modprobe br_netfilter
+
+cat <<EOF |tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward                 = 1
+EOF
+
+sysctl --system
+
+echo '======== [6-2] 컨테이너 런타임 (containerd 설치) ========'
+echo '======== [6-2-1] containerd 패키지 설치 (option2) ========'
+echo '======== [6-2-1-1] docker engine 설치 ========'
+echo '======== [6-2-1-1] repo 설정 ========'
+dnf -y install dnf-plugins-core
+dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
+
+echo '======== [6-2-1-1] containerd 설치 ========'
+dnf install -y containerd.io-1.6.32-3.1.el8
+systemctl daemon-reload
+systemctl enable --now containerd
+
+echo '======== [6-3] 컨테이너 런타임 : cri 활성화 ========'
+# defualt cgroupfs에서 systemd로 변경 (kubernetes default는 systemd)
+containerd config default > /etc/containerd/config.toml
+sed -i 's/ SystemdCgroup = false/ SystemdCgroup = true/' /etc/containerd/config.toml
+systemctl restart containerd
+
+echo '======== [7] kubeadm 설치 ========'
+echo '======== [7] repo 설정 ========'
+cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
+[kubernetes]
+name=Kubernetes
+baseurl=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/
+enabled=1
+gpgcheck=1
+gpgkey=https://pkgs.k8s.io/core:/stable:/v1.34/rpm/repodata/repomd.xml.key
+exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
+EOF
+
+echo '======== [7] SELinux 설정 ========'
+setenforce 0
+sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+echo '======== [7] kubelet, kubeadm, kubectl 패키지 설치 ========'
+yum install -y kubelet-1.34.2 kubeadm-1.34.2 kubectl-1.34.2 --disableexcludes=kubernetes
+systemctl enable --now kubelet
+
+SHELL
+
+
+
+$install_master = <<-SHELL
+
+echo '======== [8] kubeadm으로 클러스터 생성  ========'
+echo '======== [8-1] 클러스터 초기화 (Pod Network 세팅) ========'
+kubeadm init --pod-network-cidr=20.96.0.0/12 --apiserver-advertise-address 192.168.56.30
+
+echo '======== [8-2] kubectl 사용 설정 ========'
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+
+
+
+SHELL
