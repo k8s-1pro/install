@@ -1,0 +1,53 @@
+controller:
+
+  # 커뮤니티용 - kubernetes/ingress-nginx
+  image:
+    registry: registry.k8s.io
+    image: ingress-nginx/controller
+    tag: "v1.11.3"
+
+  # Service에 externalIPs 속성 추가
+  service:
+    type: ClusterIP
+    externalIPs:
+      - 192.168.56.30
+
+  # Nginx 설치시 ingressClass 생성
+  ingressClassResource:
+    name: nginx
+    enabled: true
+    default: true
+    controllerValue: "k8s.io/ingress-nginx"
+  ingressClass: nginx
+
+  extraEnvs:
+    - name: TZ
+      value: Asia/Seoul
+
+  replicaCount: 1
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+  # Master 노드에 스케줄링 되도록 tolerations 설정
+  nodeSelector:
+    kubernetes.io/hostname: k8s-master
+
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+# 프로메테우스 메트릭 수집 설정
+#  metrics:
+#    enabled: true
+#    serviceMonitor:
+#      enabled: true
+#      namespace: monitoring
+#      additionalLabels:
+#        release: monitoring
