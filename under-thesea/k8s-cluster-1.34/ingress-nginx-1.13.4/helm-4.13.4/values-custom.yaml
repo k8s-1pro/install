@@ -24,3 +24,12 @@ controller:
     - key: "node-role.kubernetes.io/control-plane"
       operator: "Exists"
       effect: "NoSchedule"
+
+  admissionWebhooks:
+    patch:
+      nodeSelector:
+        kubernetes.io/hostname: k8s-master
+      tolerations:
+        - key: "node-role.kubernetes.io/control-plane"
+          operator: "Exists"
+          effect: "NoSchedule"
