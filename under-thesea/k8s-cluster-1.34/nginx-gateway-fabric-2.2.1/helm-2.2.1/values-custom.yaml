@@ -1,0 +1,20 @@
+nginxGateway:
+
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+
+  nodeSelector:
+    kubernetes.io/hostname: k8s-master
+  metrics:
+    enable: false
+
+nginx:
+  service:
+    type: ClusterIP
+    externalIPs:
+      - 192.168.56.30
+
+certGenerator:
+  enable: false

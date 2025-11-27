@@ -178,11 +178,9 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-
 
 
 echo '======== [9-2-4] Nginx 설치 ========'
-helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-helm pull ingress-nginx/ingress-nginx --version 4.13.4
-tar -xf ingress-nginx-4.13.4.tgz
-curl -o ./ingress-nginx/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/ingress-nginx-1.13.4/helm-4.13.4/values-custom.yaml
-helm upgrade --install ingress-nginx ./ingress-nginx -n ingress-nginx --create-namespace -f ./ingress-nginx/values-custom.yaml
+helm pull oci://ghcr.io/nginx/charts/nginx-gateway-fabric --version 2.2.1 --untar
+curl -o ./nginx-gateway-fabric/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/nginx-gateway-fabric-2.2.1/helm-2.2.1/values-custom.yaml
+helm upgrade --install nginx-gateway-fabric ./nginx-gateway-fabric -n nginx-gateway-fabric --create-namespace -f ./nginx-gateway-fabric/values-custom.yaml
 
 echo '======== [9-2-5] Gateway API 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/gateway-api-1.4.0/standard-install.yaml
