@@ -177,15 +177,18 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/secret.yaml
 
 
-echo '======== [9-2-4] Nginx 설치 ========'
+echo '======== [9-3] Nginx 설치 ========'
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm pull ingress-nginx/ingress-nginx --version 4.13.4
 tar -xf ingress-nginx-4.13.4.tgz
 curl -o ./ingress-nginx/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/ingress-nginx-1.13.4/helm-4.13.4/values-custom.yaml
 helm upgrade --install ingress-nginx ./ingress-nginx -n ingress-nginx --create-namespace -f ./ingress-nginx/values-custom.yaml
 
-echo '======== [9-2-5] Gateway API 설치 ========'
+echo '======== [9-4] Gateway API 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/gateway-api-1.4.0/standard-install.yaml
 
+echo '======== [9-5] Cert-Manager 설치 ========'
+helm repo add jetstack https://charts.jetstack.io
+helm install cert-manager jetstack/cert-manager --version 1.19.2 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true
 
 SHELL
