@@ -172,7 +172,7 @@ helm repo add k8s-dashboard https://kubernetes.github.io/dashboard
 helm pull k8s-dashboard/kubernetes-dashboard --version 7.14.0
 tar -xf kubernetes-dashboard-7.14.0.tgz
 curl -o ./kubernetes-dashboard/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/helm-7.14.0/values-custom.yaml
-helm upgrade --install kubernetes-dashboard ./kubernetes-dashboard -n kubernetes-dashboard --create-namespace -f ./kubernetes-dashboard/values-custom.yaml
+helm upgrade --install kubernetes-dashboard ./kubernetes-dashboard -n kubernetes-dashboard --create-namespace -f ./kubernetes-dashboard/values-custom.yaml &
 
 echo '======== [9-2-3] Dashboard Admin 접근 권한 생성 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/kubernetes-dashboard-7.14.0/serviceaccount.yaml
@@ -185,13 +185,13 @@ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm pull ingress-nginx/ingress-nginx --version 4.13.4
 tar -xf ingress-nginx-4.13.4.tgz
 curl -o ./ingress-nginx/values-custom.yaml https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/ingress-nginx-1.13.4/helm-4.13.4/values-custom.yaml
-helm upgrade --install ingress-nginx ./ingress-nginx -n ingress-nginx --create-namespace -f ./ingress-nginx/values-custom.yaml
+helm upgrade --install ingress-nginx ./ingress-nginx -n ingress-nginx --create-namespace -f ./ingress-nginx/values-custom.yaml &
 
 echo '======== [9-4] Gateway API 설치 ========'
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/gateway-api-1.4.0/standard-install.yaml
 
 echo '======== [9-5] Cert-Manager 설치 ========'
 helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true
+helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true &
 
 SHELL
