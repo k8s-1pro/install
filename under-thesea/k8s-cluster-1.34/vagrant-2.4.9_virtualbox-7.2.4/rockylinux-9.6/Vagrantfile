@@ -189,6 +189,6 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-
 
 echo '======== [9-5] Cert-Manager 설치 ========'
 helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager --version 1.19.2 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true
+helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true
 
 SHELL
