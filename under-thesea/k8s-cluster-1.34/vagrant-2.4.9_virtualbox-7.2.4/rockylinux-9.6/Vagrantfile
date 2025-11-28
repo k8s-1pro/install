@@ -152,6 +152,9 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/calico-3.31.1/tigera-operator.yaml
 kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-thesea/k8s-cluster-1.34/calico-3.31.1/custom-resources.yaml
 
+echo '======== [8-4] Master 노드에 Pod 생성 허용 ========'
+kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane:NoSchedule-
+
 echo '======== [9] 쿠버네티스 편의기능 설치 ========'
 echo '======== [9-1] kubectl 자동완성 기능 ========'
 echo "source <(kubectl completion bash)" >> ~/.bashrc
@@ -189,6 +192,6 @@ kubectl create -f https://raw.githubusercontent.com/k8s-1pro/install/main/under-
 
 echo '======== [9-5] Cert-Manager 설치 ========'
 helm repo add jetstack https://charts.jetstack.io
-helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true
+helm install cert-manager jetstack/cert-manager --version 1.19.1 --namespace cert-manager --create-namespace --set featureGates="ExperimentalCertificateSigningRequestControllers=true" --set installCRDs=true --set global.nodeSelector=""
 
 SHELL
