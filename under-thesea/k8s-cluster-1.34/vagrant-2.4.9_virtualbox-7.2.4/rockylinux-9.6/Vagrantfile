@@ -156,10 +156,10 @@ echo '======== [8-4] Master 노드에 Pod 생성 허용 ========'
 kubectl taint nodes k8s-master node-role.kubernetes.io/control-plane:NoSchedule-
 
 echo '======== [9] 쿠버네티스 편의기능 설치 ========'
-#echo '======== [9-1] kubectl 자동완성 기능 ========'
-#echo "source <(kubectl completion bash)" >> ~/.bashrc
-#echo 'alias k=kubectl' >>~/.bashrc
-#echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+echo '======== [9-1] kubectl 자동완성 기능 ========'
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+echo 'alias k=kubectl' >>~/.bashrc
+echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
 echo '======== [9-2] Helm/Dashboard 설치 ========'
 echo '======== [9-2-1] Helm 설치 ========'
