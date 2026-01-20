@@ -7,7 +7,7 @@ Vagrant.configure("2") do |config|
   # 자동 업데이트 안함
   config.vbguest.auto_update = false
   # PC-VM간 마운팅 안함
-  config.vm.network :forwarded_port, guest: 22, host: 2222, id: "ssh", auto_correct: true
+  config.vm.network :forwarded_port, guest: 22, host: 2322, id: "ssh", auto_correct: true
   config.vm.synced_folder "./", "/vagrant", disabled: true
 
   config.vm.define "cicd-server" do |cicd|
