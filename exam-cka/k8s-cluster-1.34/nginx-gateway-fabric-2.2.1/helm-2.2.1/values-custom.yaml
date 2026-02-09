@@ -1,14 +1,11 @@
+
 nginxGateway:
-
-  tolerations:
-    - key: "node-role.kubernetes.io/control-plane"
-      operator: "Exists"
-      effect: "NoSchedule"
-
-  nodeSelector:
-    kubernetes.io/hostname: k8s-master
   metrics:
     enable: false
 
-certGenerator:
-  enable: false
+nginx:
+  service:
+    type: NodePort
+    nodePorts:
+    - port: 30009
+      listenerPort: 80
