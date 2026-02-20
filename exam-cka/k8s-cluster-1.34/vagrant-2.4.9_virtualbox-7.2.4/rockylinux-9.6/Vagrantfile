@@ -152,6 +152,17 @@ echo "cka0001 ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/cka0001
 chmod 440 /etc/sudoers.d/cka0001
 echo "cka0001:cka0001" | chpasswd
 
+echo '======== [10-1-1] CKA 실습용 kubectl 권한 설정 ========'
+mkdir -p /home/cka0001/.kube
+cp /etc/kubernetes/admin.conf /home/cka0001/.kube/config
+chown -R cka0001:cka0001 /home/cka0001/.kube
+chmod 600 /home/cka0001/.kube/config
+
+echo '======== [1-1-2] CKA 실습용 kubectl 자동 완성 ========'
+su - cka0001 -c 'echo "source <(kubectl completion bash)" >> ~/.bashrc'
+su - cka0001 -c 'echo "alias k=kubectl" >> ~/.bashrc'
+su - cka0001 -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
+
 echo '======== [10-2] Ingress Nginx 설치 ========'
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm pull ingress-nginx/ingress-nginx --version 4.13.4
