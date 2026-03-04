@@ -1,0 +1,19 @@
+controller:
+  image:
+    image: ingress-nginx/controller
+    tag: "v1.13.4"
+
+  service:
+    type: ClusterIP
+    externalIPs:
+      - 192.168.56.40
+
+  ingressClassResource:
+    name: nginx
+    default: true
+
+  extraEnvs:
+    - name: TZ
+      value: Asia/Seoul
+
+  replicaCount: 1
