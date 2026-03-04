@@ -152,7 +152,7 @@ echo "ckad0001 ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/ckad0001
 chmod 440 /etc/sudoers.d/ckad0001
 echo "ckad0001:ckad0001" | chpasswd
 
-echo '======== [10-1-1] CKA 실습용 kubectl 권한 설정 ========'
+echo '======== [10-1-1] CKAD 실습용 kubectl 권한 설정 ========'
 mkdir -p /home/ckad0001/.kube
 cp /etc/kubernetes/admin.conf /home/ckad0001/.kube/config
 chown -R ckad0001:ckad0001 /home/ckad0001/.kube
