@@ -70,16 +70,16 @@ EOF
 sysctl --system
 
 echo '======== [6-2] 컨테이너 런타임 (containerd 설치) ========'
-echo '======== [6-2-1] containerd 패키지 설치 (option2) ========'
-echo '======== [6-2-1-1] docker engine 설치 ========'
+echo '======== [6-2-1] containerd & docker engine패키지 설치 (option2) ========'
 echo '======== [6-2-1-1] repo 설정 ========'
 dnf -y install dnf-plugins-core
 dnf config-manager --add-repo https://download.docker.com/linux/rhel/docker-ce.repo
 
-echo '======== [6-2-1-1] containerd 설치 ========'
-dnf install -y containerd.io-1.7.29-1.el9
+echo '======== [6-2-1-2] docker & containerd 설치 ========'
+dnf install -y docker-ce-3:28.5.2-1.el9 docker-ce-cli-1:28.5.2-1.el9 containerd.io-1.7.29-1.el9
 systemctl daemon-reload
 systemctl enable --now containerd
+systemctl enable --now docker
 
 echo '======== [6-3] 컨테이너 런타임 : cri 활성화 ========'
 # defualt cgroupfs에서 systemd로 변경 (kubernetes default는 systemd)
@@ -158,7 +158,7 @@ cp /etc/kubernetes/admin.conf /home/ckad0001/.kube/config
 chown -R ckad0001:ckad0001 /home/ckad0001/.kube
 chmod 600 /home/ckad0001/.kube/config
 
-echo '======== [1-1-2] CKAD 실습용 kubectl 자동 완성 ========'
+echo '======== [10-1-2] CKAD 실습용 kubectl 자동 완성 ========'
 su - ckad0001 -c 'echo "source <(kubectl completion bash)" >> ~/.bashrc'
 su - ckad0001 -c 'echo "alias k=kubectl" >> ~/.bashrc'
 su - ckad0001 -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
