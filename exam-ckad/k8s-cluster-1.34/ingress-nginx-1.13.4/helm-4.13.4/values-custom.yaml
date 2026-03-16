@@ -6,7 +6,7 @@ controller:
   service:
     type: ClusterIP
     externalIPs:
-      - 192.168.56.40
+      - 192.168.56.41
 
   ingressClassResource:
     name: nginx
