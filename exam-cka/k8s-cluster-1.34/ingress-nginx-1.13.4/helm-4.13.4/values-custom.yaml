@@ -17,3 +17,6 @@ controller:
       value: Asia/Seoul
 
   replicaCount: 1
+
+  admissionWebhooks:
+    enabled: false

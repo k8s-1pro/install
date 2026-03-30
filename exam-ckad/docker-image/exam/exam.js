@@ -2,14 +2,15 @@ var http = require('http');
 
 var content = function(req, resp) {
 
-  if (
-    req.url === "/ready" ||
-    req.url === "/startup" ||
-    req.url === "/readiness" ||
-    req.url === "/liveness"
-  ) {
+  if (req.url === "/healthx") {
     resp.writeHead(200, {'Content-Type': 'text/plain'});
-    resp.end("ok\n");
+    resp.end("Health Check OK!\n");
+    return;
+  }
+
+  if (req.url === "/version") {
+    resp.writeHead(200, {'Content-Type': 'text/plain'});
+    resp.end("version: v1\n");
     return;
   }
 
