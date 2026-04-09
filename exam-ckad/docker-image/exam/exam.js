@@ -2,9 +2,14 @@ var http = require('http');
 
 var content = function(req, resp) {
 
-  if (req.url === "/healthx") {
+  if (req.url === "/healthz") {
     resp.writeHead(200, {'Content-Type': 'text/plain'});
     resp.end("Health Check OK!\n");
+    return;
+  }
+  if (req.url === "/ready") {
+    resp.writeHead(200, {'Content-Type': 'text/plain'});
+    resp.end("Ready Check OK!\n");
     return;
   }
 
