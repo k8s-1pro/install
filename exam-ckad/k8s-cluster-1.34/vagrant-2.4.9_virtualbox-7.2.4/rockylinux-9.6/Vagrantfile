@@ -168,7 +168,6 @@ su - candidate -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
 
 echo '======== [10-2] Ingress Traefik 설치 ========'
 helm repo add traefik https://traefik.github.io/charts
-helm install traefik traefik/traefik --version 39.0.5 -n traefik --create-namespace --set ports.web.nodePort=30000
-
+helm install traefik traefik/traefik --version 39.0.5 -n traefik --create-namespace --set service.externalIPs[0]=192.168.56.41
 
 SHELL
