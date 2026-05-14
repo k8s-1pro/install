@@ -1,0 +1,163 @@
+Vagrant.configure("2") do |config|
+
+  config.vm.box = "bento/ubuntu-24.04"
+
+  config.vbguest.auto_update = false
+  config.vm.synced_folder "./", "/vagrant", disabled: true
+  config.vm.network :forwarded_port, guest: 22, host: 2445, id: "ssh", auto_correct: true
+  config.vm.provision :shell, privileged: true, inline: $install_default
+
+  config.vm.define "cks-master" do |master|
+    master.vm.hostname = "cks-master"
+    master.vm.network "private_network", ip: "192.168.56.42"
+    master.vm.provider :virtualbox do |vb|
+      vb.memory = 4096
+      vb.cpus = 4
+      vb.customize ["modifyvm", :id, "--nested-hw-virt", "on"]
+	end
+    master.vm.provision :shell, privileged: true, inline: $install_master
+  end
+
+end
+
+$install_default = <<-SHELL
+
+echo '======== [4] Ubuntu Linux 기본 설정 ========'
+apt-get update
+
+echo '======== root 로그인 허용 체크 ========'
+sed -i 's/^#*PermitRootLogin.*/PermitRootLogin yes/' /etc/ssh/sshd_config
+sed -i 's/^#*PasswordAuthentication.*/PasswordAuthentication yes/' /etc/ssh/sshd_config
+echo "root:vagrant" | chpasswd
+
+systemctl restart ssh
+
+echo '======== 타임존 설정 및 동기화========'
+timedatectl set-timezone Asia/Seoul
+apt-get install -y chrony
+
+echo '======= hosts 설정 =========='
+chmod 777 /etc/hosts
+cat << EOF >> /etc/hosts
+192.168.56.42 cks-master
+192.168.56.43 cks-worker
+EOF
+
+echo '======== [5] kubeadm 설치 전 사전작업 ========'
+echo '======== Swap 비활성화 ========'
+swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab
+
+
+echo '======== [6] 컨테이너 런타임 설치 ========'
+echo '======== 컨테이너 런타임 설치 전 사전작업 ========'
+echo '======== iptable 세팅 ========'
+cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
+overlay
+br_netfilter
+EOF
+
+sudo modprobe overlay
+sudo modprobe br_netfilter
+
+cat <<EOF | sudo tee /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-iptables  = 1
+net.bridge.bridge-nf-call-ip6tables = 1
+net.ipv4.ip_forward = 1
+EOF
+
+echo '======== 컨테이너 런타임 (docker engine) 패키지 설치 ========'
+echo '======== https://docs.docker.com/engine/install/ubuntu/ ========'
+echo '======== repo 설정 ========'
+apt install -y ca-certificates curl
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+tee /etc/apt/sources.list.d/docker.sources <<EOF
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+EOF
+apt update
+
+echo '======== docker 설치 ========'
+apt install -y containerd.io=2.2.3-1~ubuntu.24.04~noble \
+               docker-buildx-plugin=0.33.0-1~ubuntu.24.04~noble \
+               docker-ce-cli=5:29.4.3-1~ubuntu.24.04~noble \
+               docker-ce=5:29.4.3-1~ubuntu.24.04~noble \
+               docker-compose-plugin=5.1.3-1~ubuntu.24.04~noble
+systemctl start docker
+
+echo '======== cri-dockerd 설치 ========'
+wget https://github.com/Mirantis/cri-dockerd/releases/download/v0.4.3/cri-dockerd_0.4.3.3-0.ubuntu-jammy_amd64.deb
+apt install ./cri-dockerd_0.4.3.3-0.ubuntu-jammy_amd64.deb -y
+rm cri-dockerd_0.4.3.3-0.ubuntu-jammy_amd64.deb
+
+echo '======== [7] kubeadm 설치 ========'
+echo '======== 의존성 패키지 설치 ========'
+apt-get install -y apt-transport-https ca-certificates curl gpg
+
+echo '======== GPG 키 다운로드 ========'
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.34/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+echo '======== 저장소 리스트 등록 ========'
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.34/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+echo '======== kubelet, kubeadm, kubectl 패키지 설치 ========'
+apt-get update
+apt-get install -y kubelet=1.34.8-1.1 kubeadm=1.34.8-1.1 kubectl=1.34.8-1.1
+systemctl enable --now kubelet
+SHELL
+
+
+
+$install_master = <<-SHELL
+
+echo '======== [8] kubeadm으로 클러스터 생성  ========'
+echo '======== 클러스터 초기화 (Pod Network 세팅) ========'
+kubeadm init --pod-network-cidr=10.244.0.0/16 --apiserver-advertise-address 192.168.56.42 --cri-socket unix:///var/run/cri-dockerd.sock
+
+echo '======== kubectl 사용 설정 ========'
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+
+echo '======== Master 노드에 Pod 생성 허용 ========'
+kubectl taint nodes cks-master node-role.kubernetes.io/control-plane:NoSchedule-
+
+echo '======== Pod Network 설치 (Cilium) ========'
+wget https://github.com/cilium/cilium-cli/releases/download/v0.19.2/cilium-linux-amd64.tar.gz
+tar xzvfC cilium-linux-amd64.tar.gz /usr/local/bin
+rm cilium-linux-amd64.tar.gz
+cilium install --version 1.19.3
+
+
+echo '======== [9] 쿠버네티스 편의기능 설치 ========'
+echo '======== kubectl 자동완성 기능 ========'
+apt-get install -y bash-completion
+echo "source <(kubectl completion bash)" >> ~/.bashrc
+echo 'alias k=kubectl' >>~/.bashrc
+echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
+
+echo '======== [10] 시험 환경을 위한 오픈소스 설치 ========'
+
+echo '======== candidate 유저 생성 ========'
+useradd -m -s /bin/bash candidate
+echo "candidate ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/candidate
+chmod 440 /etc/sudoers.d/candidate
+echo "candidate:candidate" | chpasswd
+
+echo '======== CKAD 실습용 kubectl 권한 설정 ========'
+mkdir -p /home/candidate/.kube
+cp /etc/kubernetes/admin.conf /home/candidate/.kube/config
+chown -R candidate:candidate /home/candidate/.kube
+chmod 600 /home/candidate/.kube/config
+
+echo '======== CKAD 실습용 kubectl 자동 완성 ========'
+su - candidate -c 'echo "source <(kubectl completion bash)" >> ~/.bashrc'
+su - candidate -c 'echo "alias k=kubectl" >> ~/.bashrc'
+su - candidate -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
+
+SHELL
