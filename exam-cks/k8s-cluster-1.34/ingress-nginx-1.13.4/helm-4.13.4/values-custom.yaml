@@ -6,7 +6,7 @@ controller:
   service:
     type: ClusterIP
     externalIPs:
-      - 192.168.56.41
+      - 192.168.56.42
 
   ingressClassResource:
     name: nginx
@@ -17,3 +17,6 @@ controller:
       value: Asia/Seoul
 
   replicaCount: 1
+
+  admissionWebhooks:
+    enabled: false

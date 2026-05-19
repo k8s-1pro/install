@@ -36,13 +36,6 @@ echo '======== 타임존 설정 및 동기화========'
 timedatectl set-timezone Asia/Seoul
 apt-get install -y chrony
 
-echo '======= hosts 설정 =========='
-chmod 777 /etc/hosts
-cat << EOF >> /etc/hosts
-192.168.56.42 cks-master
-192.168.56.43 cks-worker
-EOF
-
 echo '======== [5] kubeadm 설치 전 사전작업 ========'
 echo '======== Swap 비활성화 ========'
 swapoff -a && sed -i '/ swap / s/^/#/' /etc/fstab
@@ -141,7 +134,7 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
-echo '======== [10] 시험 환경을 위한 오픈소스 설치 ========'
+echo '======== [10] 시험 환경 사용자 설정 ========'
 
 echo '======== candidate 유저 생성 ========'
 useradd -m -s /bin/bash candidate
@@ -149,13 +142,13 @@ echo "candidate ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/candidate
 chmod 440 /etc/sudoers.d/candidate
 echo "candidate:candidate" | chpasswd
 
-echo '======== CKAD 실습용 kubectl 권한 설정 ========'
+echo '======== CKS 실습용 kubectl 권한 설정 ========'
 mkdir -p /home/candidate/.kube
 cp /etc/kubernetes/admin.conf /home/candidate/.kube/config
 chown -R candidate:candidate /home/candidate/.kube
 chmod 600 /home/candidate/.kube/config
 
-echo '======== CKAD 실습용 kubectl 자동 완성 ========'
+echo '======== CKS 실습용 kubectl 자동 완성 ========'
 su - candidate -c 'echo "source <(kubectl completion bash)" >> ~/.bashrc'
 su - candidate -c 'echo "alias k=kubectl" >> ~/.bashrc'
 su - candidate -c 'echo "complete -o default -F __start_kubectl k" >> ~/.bashrc'
