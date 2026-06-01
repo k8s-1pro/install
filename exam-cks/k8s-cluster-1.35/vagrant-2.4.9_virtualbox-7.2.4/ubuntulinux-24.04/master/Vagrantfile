@@ -139,6 +139,12 @@ echo "source <(kubectl completion bash)" >> ~/.bashrc
 echo 'alias k=kubectl' >>~/.bashrc
 echo 'complete -o default -F __start_kubectl k' >>~/.bashrc
 
+echo '======== Helm 설치 ========'
+curl -O https://get.helm.sh/helm-v3.19.2-linux-amd64.tar.gz
+dnf install -y tar
+tar -zxvf helm-v3.19.2-linux-amd64.tar.gz
+mv linux-amd64/helm /usr/bin/helm
+
 echo '======== [10] 시험 환경 사용자 설정 ========'
 
 echo '======== candidate 유저 생성 ========'
